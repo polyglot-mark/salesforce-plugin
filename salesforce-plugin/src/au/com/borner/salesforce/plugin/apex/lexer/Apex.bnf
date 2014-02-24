@@ -1,0 +1,628 @@
+/*
+ *  Copyright 2014 Mark Borner
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+*/
+{
+    classHeader="license.txt"
+    parserClass="au.com.borner.salesforce.plugin.apex.parser.ApexParser"
+
+    extends="com.intellij.extapi.psi.ASTWrapperPsiElement"
+
+    psiClassPrefix="Apex"
+    psiImplClassSuffix="Impl"
+    psiPackage="au.com.borner.salesforce.plugin.apex.psi"
+    psiImplPackage="au.com.borner.salesforce.plugin.apex.psi.impl"
+
+    elementTypeHolderClass="au.com.borner.salesforce.plugin.apex.psi.ApexTypes"
+    elementTypeClass="au.com.borner.salesforce.plugin.apex.psi.ApexElementType"
+    tokenTypeClass="au.com.borner.salesforce.plugin.apex.psi.ApexTokenType"
+
+    psiImplUtilClass="au.com.borner.salesforce.plugin.apex.psi.impl.ApexPsiImplUtil"
+
+    tokens = [
+
+        CLASS_KEYWORD   = "class"
+
+        LPAREN          = "("
+        RPAREN          = ")"
+        LBRACE          = "{"
+        RBRACE          = "}"
+        LBRACK          = "["
+        RBRACK          = "]"
+        SEMI            = ";"
+        COMMA           = ","
+        DOT             = "."
+        AT_SIGN         = "@"
+
+        OPERATOR_ASSIGNMENT         = "="
+        OPERATOR_GREATER_THAN       = ">"
+        OPERATOR_LESS_THAN          = "<"
+        OPERATOR_NOT                = "!"
+        OPERATOR_TERNARY            = "?"
+        OPERATOR_COLON              = ":"
+        OPERATOR_EQUALITY           = "=="
+        OPERATOR_EXACT_EQUALITY     = "==="
+        OPERATOR_LESS_THAN_EQUAL    = "<="
+        OPERATOR_GREATER_THAN_EQUAL = ">="
+        OPERATOR_INEQUALITY         = "!="
+        OPERATOR_EXACT_INEQUALITY   = "!=="
+        OPERATOR_AND                = "&&"
+        OPERATOR_OR                 = "||"
+        OPERATOR_INCREMENT          = "++"
+        OPERATOR_DECREMENT          = "--"
+        OPERATOR_ADDITION           = "+"
+        OPERATOR_SUBTRACTION        = "-"
+        OPERATOR_MULTIPLICATION     = "*"
+        OPERATOR_DIVSION            = "/"
+        OPERATOR_BITWISE_AND        = "&"
+        OPERATOR_BITWISE_OR         = "|"
+
+        OPERATOR_ADDITION_ASSIGNMENT         = "+="
+        OPERATOR_SUBTRACTION_ASSIGNMENT      = "-="
+        OPERATOR_MULTIPLICATION_ASSIGNMENT   = "*="
+        OPERATOR_DIVISION_ASSIGNMENT         = "/="
+        OPERATOR_AND_ASSIGNMENT              = "&="
+        OPERATOR_OR_ASSIGNMENT               = "|="
+        OPERATOR_BITWISE_EXCLUSIVE_OR2       = "^="
+        OPERATOR_BITWISE_EXCLUSIVE_OR1       = "^"
+        OPERATOR_BITWISE_SHIFT_LEFT_ASSIGNMENT   = "<<="
+        OPERATOR_BITWISE_SHIFT_RIGHT_ASSIGNMENT  = ">>="
+        OPERATOR_BITWISE_SHIFT_RIGHT_UNSIGNED_ASSIGNMENT  = ">>>="
+
+        LINE_COMMENT = "regexp://.*"
+        COMMENT = "regexp:/\*(.|\n)*\*/"
+
+        identifier      = "regexp:[a-zA-Z$_][a-zA-Z0-9$_]*"
+        STRING_LITERAL  = "regexp:\'(\\b|\\t|\\n|\\f|\\r|\\\'|\\'|\\|.)*\'"
+        INTEGER_LITERAL = "regexp:-?[0-9]*"
+        DECIMAL_LITERAL = "regexp:-?[0-9]*\.[0-9]*"
+        LONG_LITERAL    = "regexp:-?[0-9]*L"
+    ]
+
+    extends(".+Declaration")=Declaration
+    extends(".+Reference")=Reference
+    extends(".*expression")=expression
+    pin(".+Clause")=2
+    //recoverWhile(".+Declaration")="#auto"
+
+}
+
+apexFile
+    ::= interfaceDeclaration
+    |   classDeclaration
+    |   triggerDefinition
+    |   enumDeclaration
+
+fake Declaration ::=  visibility? identifier  {
+                     extends="au.com.borner.salesforce.plugin.apex.psi.impl.ApexDeclarationElementImpl"
+                     implements="au.com.borner.salesforce.plugin.apex.psi.ApexDeclarationElement"
+                     methods = [ getPresentation ]
+}
+
+fake Reference ::=  identifier
+                    { extends="au.com.borner.salesforce.plugin.apex.psi.impl.ApexReferenceElementImpl"
+                      implements="au.com.borner.salesforce.plugin.apex.psi.ApexReferenceElement"}
+
+visibility
+    ::= ( public | private | global | protected )
+
+classDeclaration
+    ::= annotation* visibility? virtualOrAbstractModifier? sharingModifier? CLASS_KEYWORD identifier extendsClause? implementsClause? classBody { pin=6 }
+
+virtualOrAbstractModifier
+    ::= ( virtual | abstract )
+
+sharingModifier
+    ::= ( with sharing | without sharing )
+
+extendsClause
+    ::= extends classOrInterfaceReference
+
+implementsClause
+    ::= implements classOrInterfaceReference (',' classOrInterfaceReference)*
+
+interfaceDeclaration
+    ::= visibility? virtual? interface identifier extendsClause? interfaceBody { pin=4 }
+
+triggerDefinition
+    ::= trigger identifier on identifier '(' triggerParameters ')' triggerBody { pin=2 }
+
+private triggerParameters
+    ::= triggerParameter (',' triggerParameter)*
+
+triggerParameter
+    ::= before insert |
+        before update |
+        before delete |
+        after insert |
+        after update |
+        after delete |
+        after undelete
+
+enumDeclaration
+    ::= annotation* visibility? enum identifier '{' enumIdentifiers '}' { pin=3 }
+
+private enumIdentifiers
+    ::= identifier (',' identifier)*
+
+annotation
+    ::= '@' identifier ( '(' annotationParameters ')' )? { pin=2 }
+
+private annotationParameters
+    ::=   annotationParameter (',' annotationParameter)*
+
+annotationParameter
+    ::=   identifier '=' annotationParameterValue { pin=1 }
+
+annotationParameterValue
+    ::= (STRING_LITERAL | booleanLiteral)
+
+classBody
+    ::= '{' '}'
+    |   '{' (members | staticBlock | block)* '}' { pin=1 }
+
+interfaceBody
+    ::= '{' '}'
+
+triggerBody
+    ::= '{' '}'
+
+staticBlock
+    ::= static block { pin=1 }
+
+private members
+    ::= constructorDeclaration
+    |   fieldDeclarator
+    |   methodDeclaration
+    |   interfaceDeclaration
+    |   classDeclaration
+//    |   enumModifier enumDeclaration
+
+methodDeclaration
+    ::=  annotation* visibility? staticOrTransientModifier* virtualOrAbstractModifier? ( classInterfaceOrPrimitiveType | void ) identifier parameters methodBody  { pin=6 }
+
+staticOrTransientModifier
+    ::= ( static | transient )
+
+classInterfaceOrPrimitiveType
+    ::=   classOrInterfaceReference ('[' ']')?
+    |   primitiveType ('[' ']')?
+    |   collectionType
+
+
+classOrInterfaceReference
+    ::=   identifier         // TODO: typeArguments? (DOT Identifier typeArguments? )*
+
+//typeArguments
+//    ::=   OPERATOR_LESS_THAN typeArgument (COMMA typeArgument)* OPERATOR_GREATER_THAN { pin=1 }
+
+typeArgument
+    ::=   classInterfaceOrPrimitiveType
+
+primitiveType
+    ::=   Blob
+    |   Boolean
+    |   Date
+    |   Datetime
+    |   Decimal
+    |   Double
+    |   ID
+    |   Integer
+    |   Long
+    |   String
+    |   Time
+
+private collectionType
+    ::= listCollection | setCollection | mapCollection
+
+listCollection
+    ::= List '<' typeArgument '>' { pin=1 }
+
+setCollection
+    ::= Set '<' typeArgument '>' { pin=1 }
+
+mapCollection
+    ::= Map '<' typeArgument ',' typeArgument '>' { pin=1 }
+
+parameters
+    ::=   '(' parameterList? ')'
+
+private parameterList
+    ::=   parameterDefinition (',' parameterDefinition)*
+
+parameterDefinition
+    ::=   variableModifier? classInterfaceOrPrimitiveType identifier
+
+variableModifier
+    ::= final
+
+methodBody
+    ::= block
+
+constructorDeclaration
+    ::=   visibility? identifier parameters constructorBody { pin=3 }
+
+constructorBody
+    ::= block
+
+fieldDeclarator
+    ::=   fieldVisibility? classInterfaceOrPrimitiveType variableDeclarators ';'
+
+fieldVisibility
+    ::= ( public | private | global | protected )
+
+private variableDeclarators
+    ::=   variableDefinition (',' variableDefinition)* { pin=2 }
+
+variableDefinition
+    ::=   identifier ('=' variableInitializer)? { pin=1 }
+
+variableInitializer
+    ::=   arrayInitializer
+    |   expression
+
+arrayInitializer      // only allowed after new - for example: public String[] strings = new String[] {'one','two'};
+    ::=   '{' (variableInitializer (',' variableInitializer)* (',')? )? '}' { pin=1 }
+
+
+
+// Blocks
+
+block
+    ::= '{' blockStatement* '}'
+
+blockStatement
+    ::=   localVariableDeclarationStatement
+    |   statement
+    |   classDeclaration
+    |   interfaceDeclaration
+
+
+localVariableDeclarationStatement
+    ::=    localVariableDeclarator ';'
+
+
+localVariableDeclarator
+    ::=   variableModifier? classInterfaceOrPrimitiveType variableDeclarators
+
+
+statement
+    ::=   block
+    |   ifStatement
+    |   classicForStatement
+    |   enhancedForStatement
+    |   whileStatement
+    |   doStatement
+    |   tryStatement
+    |   return expression? ';'
+    |   throw expression ';'
+    |   break ';'
+    |   continue ';'
+    |   ';'
+    |   expression ';'
+
+ifStatement
+    ::=  if '(' expression ')' statement (else statement)? { pin=1 }
+
+classicForStatement
+    ::=  for '(' forInit? ';' expression? ';' forUpdate? ')' statement { pin=4 }
+
+forInit
+    ::=  localVariableDeclarator
+    |    expressionList
+
+forUpdate
+    ::=  expressionList
+
+expressionList
+    ::=   expression (',' expression)*
+
+enhancedForStatement
+    ::=  for '(' variableModifier? classInterfaceOrPrimitiveType identifier ':' expression ')' statement { pin=6 }
+
+whileStatement
+    ::=  while '(' expression ')' statement { pin=1 }
+
+doStatement
+    ::=  do statement while '(' expression ')' ';' { pin=1 }
+
+tryStatement
+    ::=  try block (catchClause+ finallyBlock? | finallyBlock)
+
+catchClause
+    ::=   catch '(' variableModifier? classOrInterfaceReference identifier ')' block { pin=1 }
+
+finallyBlock
+    ::=   finally block { pin=1 }
+
+
+
+// Expressions
+
+expression
+    ::= primary_expression
+    |  identifier_expression
+    |  this_expression
+    |  weird_expression
+    |  super_expression
+    |  generic_expression
+    |  array_position_expression
+    |  expressionList_expression
+    |  instantiation_expression
+    |  cast_expression
+    |  increment_after_expression
+    |  decrement_after_expression
+    |  unary_negation_expression
+    |  decrement_before_expression
+    |  increment_before_expression
+    |  logical_compliment_expression
+    |  multiplication_expression
+    |  division_expression
+    |  addition_expression
+    |  subtraction_expression
+    |  bitwise_shift_left_expression
+    |  bitwise_shift_right_expression
+    |  bitwise_shift_right_unsigned_expression
+    |  greater_equal_expression
+    |  less_equal_expression
+    |  greater_than_expression
+    |  less_than_expression
+    |  instanceOf_expression
+    |  exact_equality_expression
+    |  exact_inequality_expression
+    |  equality_expression
+    |  inequality_expression
+    |  bitwise_and_expression
+    |  bitwise_exclusive_or_1expression
+    |  bitwise_exclusive_or_2expression
+    |  bitwise_or_expression
+    |  or_expression
+    |  and_expression
+    |  ternary_expression
+    |  assign_expression
+    |  addition_assign_expression
+    |  multiplication_assign_expression
+    |  subtraction_assign_expression
+    |  divide_assign_expression
+    |  or_assign_expression
+    |  and_assign_expression
+    |  shift_right_assign_expression
+    |  shift_right_unsigned_assign_expression
+    |  shift_left_assign_expression
+
+assign_expression
+    ::= expression '=' expression { rightAssociative=true }
+
+addition_assign_expression
+    ::= expression '+=' expression { rightAssociative=true }
+
+multiplication_assign_expression
+    ::= expression '*=' expression { rightAssociative=true }
+
+subtraction_assign_expression
+    ::= expression '-=' expression { rightAssociative=true }
+
+divide_assign_expression
+    ::= expression '/=' expression { rightAssociative=true }
+
+or_assign_expression
+    ::= expression '!=' expression { rightAssociative=true }
+
+and_assign_expression
+    ::= expression '&=' expression { rightAssociative=true }
+
+shift_left_assign_expression
+    ::= expression '<<=' expression { rightAssociative=true }
+
+shift_right_assign_expression
+    ::= expression '>>=' expression { rightAssociative=true }
+
+shift_right_unsigned_assign_expression
+    ::= expression '>>>=' expression { rightAssociative=true }
+
+ternary_expression
+    ::= expression '?' expression ':' expression
+
+and_expression
+    ::= expression '&&' expression
+
+or_expression
+    ::= expression '||' expression
+
+equality_expression
+    ::= expression '==' expression
+
+exact_equality_expression
+    ::= expression '===' expression
+
+greater_than_expression
+    ::= expression '>' expression
+
+less_than_expression
+    ::= expression '<' expression
+
+less_equal_expression
+    ::= expression '<=' expression
+
+greater_equal_expression
+    ::= expression '>=' expression
+
+inequality_expression
+    ::= expression '!=' expression
+
+exact_inequality_expression
+    ::= expression '!==' expression
+
+addition_expression
+    ::= expression '+' expression
+
+subtraction_expression
+    ::= expression '-' expression
+
+multiplication_expression
+    ::= expression '*' expression
+
+division_expression
+    ::= expression '/' expression
+
+logical_compliment_expression
+    ::=  '!' expression
+
+unary_negation_expression
+    ::=  '-' expression
+
+increment_before_expression
+    ::=  '++' expression
+
+increment_after_expression
+    ::=  expression '++'
+
+decrement_before_expression
+    ::=  '--' expression
+
+decrement_after_expression
+    ::=  expression '--'
+
+bitwise_and_expression
+    ::= expression '&' expression
+
+bitwise_or_expression
+    ::=  expression '|' expression
+
+bitwise_exclusive_or_1expression
+    ::=  expression '^' expression
+
+bitwise_exclusive_or_2expression
+    ::=  expression '^=' expression
+
+bitwise_shift_left_expression
+    ::=  expression '<<' expression
+
+bitwise_shift_right_expression
+    ::=  expression '>>' expression
+
+bitwise_shift_right_unsigned_expression
+    ::=  expression '>>>' expression
+
+instanceOf_expression
+    ::=  expression instanceof classInterfaceOrPrimitiveType
+
+cast_expression
+    ::=  '(' classInterfaceOrPrimitiveType ')' expression
+
+instantiation_expression
+    ::=  new creator
+
+expressionList_expression
+    ::=  expression '(' expressionList? ')'
+
+array_position_expression
+    ::=  expression '[' expression ']'
+
+identifier_expression
+    ::=  expression '.' identifier
+
+this_expression
+    ::=  expression '.' this
+
+weird_expression
+    ::=  expression '.' new nonWildcardTypeArguments? innerCreator
+
+super_expression
+    ::=  expression '.' super superSuffix
+
+generic_expression
+    ::=  expression '.' explicitGenericInvocation
+
+primary_expression
+    ::=   '(' expression ')'
+    |   this
+    |   super
+    |   literal
+    |   identifier
+    |   classInterfaceOrPrimitiveType '.' CLASS_KEYWORD
+    |   void '.' CLASS_KEYWORD
+    |   nonWildcardTypeArguments (explicitGenericInvocationSuffix | this arguments)
+
+creator
+    ::=   nonWildcardTypeArguments createdName classCreatorRest
+    |   createdName (arrayCreatorRest | classCreatorRest)
+
+
+createdName
+    ::=   identifier typeArgumentsOrDiamond? ('.' identifier typeArgumentsOrDiamond?)*
+    |   primitiveType
+
+
+innerCreator
+    ::=   identifier nonWildcardTypeArgumentsOrDiamond? classCreatorRest
+
+
+arrayCreatorRest
+    ::=   '['
+        (   ']' ('[' ']')* arrayInitializer
+        |   expression ']' ('[' expression ']')* ('[' ']')*
+        )
+
+
+classCreatorRest
+    ::=   arguments classBody?
+
+
+explicitGenericInvocation
+    ::=   nonWildcardTypeArguments explicitGenericInvocationSuffix
+
+
+nonWildcardTypeArguments
+    ::=   '<' typeList '>'
+
+
+typeArgumentsOrDiamond
+    ::=   '<' '>'
+    |   typeArguments
+
+
+nonWildcardTypeArgumentsOrDiamond
+    ::=   '<' '>'
+    |   nonWildcardTypeArguments
+
+
+superSuffix
+    ::=   arguments
+    |   '.' identifier arguments?
+
+
+explicitGenericInvocationSuffix
+    ::=   super superSuffix
+    |   identifier arguments
+
+
+arguments
+    ::=   '(' expressionList? ')'
+
+
+
+// Literals
+
+literal
+    ::=   INTEGER_LITERAL
+    |   DECIMAL_LITERAL
+    |   LONG_LITERAL
+    |   STRING_LITERAL
+    |   booleanLiteral
+    |   null
+
+booleanLiteral
+    ::=   true
+    |   false

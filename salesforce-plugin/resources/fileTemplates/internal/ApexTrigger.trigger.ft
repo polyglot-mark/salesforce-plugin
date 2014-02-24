@@ -1,0 +1,4 @@
+#parse("File Header.java")
+trigger ${NAME} on <entity> (<events>) {
+
+}

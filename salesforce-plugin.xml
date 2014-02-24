@@ -1,0 +1,150 @@
+<project name="Salesforce Client Library" default="package">
+
+    <property name="plugin.version" value="1.0"/>
+    <property name="project.dir" value="."/>
+    <property name="project.out" value="${project.dir}/out"/>
+
+    <property name="client.dir" value="${project.dir}/salesforce-client"/>
+    <property name="client.lib" value="${client.dir}/lib"/>
+    <property name="client.out" value="${project.out}/salesforce-client"/>
+    <property name="client.jar" value="${client.out}/salesforce-client.jar"/>
+
+    <property name="jps.dir" value="${project.dir}/salesforce-jps-plugin"/>
+    <property name="jps.out" value="${project.out}/salesforce-jps-plugin"/>
+    <property name="jps.jar" value="${jps.out}/salesforce-jps-plugin.jar"/>
+
+    <property name="plugin.dir" value="${project.dir}/salesforce-plugin"/>
+    <property name="plugin.lib" value="${plugin.dir}/lib"/>
+    <property name="plugin.out" value="${project.out}/salesforce-plugin"/>
+    <property name="plugin.jar" value="${plugin.out}/salesforce-plugin.jar"/>
+
+    <!--property name="idea.path" value="C:\Program Files (x86)\JetBrains\IntelliJ IDEA 12.1.4"/-->
+    <property name="idea.path" value="/Applications/IntelliJ IDEA 12.app"/>
+
+    <path id="jkd.classpath">
+        <fileset dir="${java.home}">
+            <include name="jre/lib/*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="idea.classpath">
+        <fileset dir="${idea.path}">
+            <include name="lib/*.jar"/>
+        </fileset>
+    </path>
+
+    <taskdef name="javac2" classname="com.intellij.ant.Javac2" classpathref="idea.classpath"/>
+
+    <path id="client.lib.classpath">
+        <fileset dir="${client.lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <path id="plugin.lib.classpath">
+        <fileset dir="${plugin.lib}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${client.out}"/>
+        <mkdir dir="${jps.out}"/>
+        <mkdir dir="${plugin.out}"/>
+        <mkdir dir="${project.out}"/>
+    </target>
+
+    <target name="clean" depends="init">
+        <delete dir="${project.out}" includes="**/*"/>
+    </target>
+
+    <target name="build.client" depends="init, clean">
+        <javac2 srcdir="${client.dir}"
+                destdir="${client.out}"
+                verbose="yes"
+                debug="true"
+                target="1.6">
+            <classpath refid="client.lib.classpath"/>
+            <classpath refid="idea.classpath"/>
+            <include name="src/**/*.java"/>
+        </javac2>
+
+        <jar destfile="${client.jar}">
+            <fileset dir="${client.out}" includes="**/*"/>
+            <manifest>
+                <attribute name="Build" value="${plugin.version}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build.jps" depends="build.client">
+        <copy todir="${jps.out}/META-INF">
+            <fileset dir="${jps.dir}/META-INF"/>
+        </copy>
+
+        <javac2 srcdir="${jps.dir}"
+                destdir="${jps.out}"
+                verbose="yes"
+                debug="true"
+                target="1.6">
+            <classpath refid="idea.classpath"/>
+            <classpath path="${client.jar}"/>
+            <include name="src/**/*.java"/>
+        </javac2>
+
+        <jar destfile="${jps.jar}">
+            <fileset dir="${jps.out}" includes="**/*"/>
+            <manifest>
+                <attribute name="Build" value="${plugin.version}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="build.plugin" depends="build.jps">
+        <copy todir="${plugin.out}/META-INF">
+            <fileset dir="${plugin.dir}/META-INF"/>
+        </copy>
+
+        <copy todir="${plugin.out}">
+            <fileset dir="${plugin.dir}/resources/"/>
+        </copy>
+
+        <javac2 srcdir="${plugin.dir}"
+                destdir="${plugin.out}"
+                verbose="yes"
+                debug="true"
+                target="1.6">
+            <classpath refid="idea.classpath"/>
+            <classpath refid="plugin.lib.classpath"/>
+            <classpath refid="client.lib.classpath"/>
+            <classpath path="${client.jar}"/>
+            <classpath path="${jps.jar}"/>
+            <include name="src/**/*.java"/>
+            <include name="src/**/*.form"/>
+            <include name="gen/**/*.java"/>
+        </javac2>
+
+        <jar destfile="${plugin.jar}">
+            <fileset dir="${plugin.out}" includes="**/*"/>
+            <manifest>
+                <attribute name="Build" value="${plugin.version}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="package" depends="build.plugin">
+        <mkdir dir="${project.out}/package/salesforce/lib"/>
+
+        <copy todir="${project.out}/package/salesforce/lib">
+            <fileset dir="${client.lib}" includes="*.jar" excludes="*-javadoc.jar,*-sources.jar"/>
+            <fileset dir="${plugin.lib}" includes="*.jar" excludes="*-javadoc.jar,*-sources.jar"/>
+            <fileset file="${client.jar}"/>
+            <fileset file="${jps.jar}"/>
+            <fileset file="${plugin.jar}"/>
+        </copy>
+
+        <zip destfile="${project.out}/salesforce-plugin-${plugin.version}.zip" basedir="${project.out}/package"/>
+
+    </target>
+
+</project>

@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="commons-codec-1.9">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/commons-codec-1.9.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/commons-codec-1.9-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

@@ -1,0 +1,3 @@
+#parse("File Header.java")
+public interface ${NAME} {
+}

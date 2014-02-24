@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/salesforce-client/salesforce-client.iml" filepath="$PROJECT_DIR$/salesforce-client/salesforce-client.iml" />
+      <module fileurl="file://$PROJECT_DIR$/salesforce-jps-plugin/salesforce-jps-plugin.iml" filepath="$PROJECT_DIR$/salesforce-jps-plugin/salesforce-jps-plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/salesforce-plugin/salesforce-plugin.iml" filepath="$PROJECT_DIR$/salesforce-plugin/salesforce-plugin.iml" />
+    </modules>
+  </component>
+</project>
+

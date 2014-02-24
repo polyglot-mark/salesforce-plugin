@@ -1,0 +1,4 @@
+#parse("File Header.java")
+@IsTest
+public class ${NAME} {
+}

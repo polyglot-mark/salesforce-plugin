@@ -1,0 +1,19 @@
+<component name="libraryTable">
+  <library name="salesforce-wsc">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/tooling.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/metadata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/force-wsc-30.0.0.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/enterprise.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/apex.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/tooling.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/metadata.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/force-wsc-30.0.0-sources.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/enterprise.jar!/" />
+      <root url="jar://$PROJECT_DIR$/salesforce-client/lib/apex.jar!/" />
+    </SOURCES>
+  </library>
+</component>

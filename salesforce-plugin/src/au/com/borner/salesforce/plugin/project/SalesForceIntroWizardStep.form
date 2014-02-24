@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="au.com.borner.salesforce.plugin.project.SalesForceIntroWizardStep">
+  <grid id="27dc6" binding="introPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+    <margin top="0" left="0" bottom="0" right="0"/>
+    <constraints>
+      <xy x="20" y="20" width="500" height="414"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <grid id="cd50b" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
+        <margin top="5" left="5" bottom="5" right="5"/>
+        <constraints>
+          <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
+        </constraints>
+        <properties/>
+        <border type="etched" title="Step 1: Create a Connected App in Salesforce"/>
+        <children>
+          <component id="7fad2" class="javax.swing.JTextPane" default-binding="true">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="6" anchor="0" fill="3" indent="0" use-parent-layout="false">
+                <preferred-size width="150" height="50"/>
+              </grid>
+            </constraints>
+            <properties>
+              <background color="-1118482"/>
+              <text value="In order to use the Salesforce Plugin for Intellij IDEA, you need to first create a Connected App in Salesforce.  Follow these instructions and record the Consumer Key &amp; Consumer Secret - you will need them in the next step.&#10;&#10;1)  Log into Salesforce&#10;2)  Select Setup | Create | Apps&#10;3)  In the Connected Apps section, click New&#10;4)  Enter the required fields - the following are suggested values:&#10;&#9;Connected App Name: IntelliJ_IDEA&#10;&#9;API Name: IntelliJ_IDEA&#10;&#9;Contact Email: &lt;your email address&gt;&#10;5)  Tick the Enable OAuth Settings option&#10;6)  Enter a Callback URL of https://localhost (this URL is not used by the plugin)&#10;7)  Select Full Access (full) from the list of Available OAuth Scopes and click Add to add it to the list of Selected OAuth Scopes&#10;8)  Click Save&#10;&#10;In the API (Enable OAuth Settings) section of the page, you will see your Consumer Key and Consumer Secret.  You will need these for the next step.&#10;"/>
+            </properties>
+          </component>
+        </children>
+      </grid>
+    </children>
+  </grid>
+</form>

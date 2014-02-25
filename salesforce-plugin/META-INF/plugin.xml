@@ -96,7 +96,6 @@
 
         <sdkType id="SALESFORCE_SDK" implementation="au.com.borner.salesforce.plugin.sdk.SalesForceSdkType"/>
 
-        <compiler implementation="au.com.borner.salesforce.plugin.compiler.SalesForceCompiler"/>
         <compileServer.plugin classpath="salesforce-jps-plugin.jar"/>
 
         <internalFileTemplate name="ApexClass"/>

@@ -20,11 +20,13 @@ import com.intellij.openapi.diagnostic.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
+import org.jetbrains.jps.builders.FileProcessor;
 import org.jetbrains.jps.builders.java.JavaSourceRootDescriptor;
 import org.jetbrains.jps.incremental.*;
 import org.jetbrains.jps.incremental.messages.BuildMessage;
 import org.jetbrains.jps.incremental.messages.CompilerMessage;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -41,15 +43,22 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
     }
 
     @Override
-    public ExitCode build(CompileContext context,
+    public ExitCode build(final CompileContext context,
                           ModuleChunk chunk,
                           DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder,
                           OutputConsumer outputConsumer) throws ProjectBuildException, IOException {
 
-        logger.warn("Testing 1 2 3");
-        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "Starting Salesforce Compile..."));
+        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "Starting Salesforce Compiler"));
         SalesForceProjectSettings projectSettings = SalesForceProjectSettings.getSettings(context.getProjectDescriptor().getProject());
         context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "Using instance named: " + projectSettings.instanceName));
+
+        dirtyFilesHolder.processDirtyFiles(new FileProcessor<JavaSourceRootDescriptor, ModuleBuildTarget>() {
+            @Override
+            public boolean apply(ModuleBuildTarget target, File file, JavaSourceRootDescriptor root) throws IOException {
+                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, file.getName()));
+                return true;
+            }
+        });
         return ExitCode.OK;
     }
 

@@ -38,7 +38,7 @@ public class SalesForceModelSerializerExtension extends JpsModelSerializerExtens
     @NotNull
     @Override
     public List<? extends JpsProjectExtensionSerializer> getProjectExtensionSerializers() {
-        return Arrays.asList(new JpsProjectExtensionSerializer("saleforce.xml", "SalesforceProjectSettings") {
+        return Arrays.asList(new JpsProjectExtensionSerializer("salesforce.xml", "SalesforceProjectSettings") {
             @Override
             public void loadExtension(@NotNull JpsProject jpsProject, @NotNull Element componentTag) {
                 SalesForceProjectSettings settings = XmlSerializer.deserialize(componentTag, SalesForceProjectSettings.class);

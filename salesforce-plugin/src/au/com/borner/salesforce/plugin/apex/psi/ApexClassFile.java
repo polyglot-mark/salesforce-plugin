@@ -54,52 +54,6 @@ public class ApexClassFile extends PsiFileBase {
         return "Apex class file";
     }
 
-    @Override
-    protected boolean isVisibilitySupported() {
-        return true;
-    }
-
-    @Override
-    protected Icon getBaseIcon() {
-        if (isException()) {
-            return ApexIcons.EXCEPTION;
-        } else if (isInterface()) {
-            return ApexIcons.INTERFACE;
-        } else if (isClass()) {
-            return ApexIcons.CLASS;
-        } else if (isEnum()) {
-            return ApexIcons.ENUM;
-        } else {
-            return super.getBaseIcon();
-        }
-    }
-
-    @Nullable
-    @Override
-    protected Icon getElementIcon(@IconFlags int flags) {
-        return getAdjustedBaseIcon(getBaseIcon(), flags);
-    }
-
-    @Override
-    protected Icon getAdjustedBaseIcon(Icon icon, @IconFlags int flags) {
-        ApexDeclaration apexDeclaration = PsiTreeUtil.getChildOfType(this, ApexDeclaration.class);
-        if (apexDeclaration != null) {
-            if (apexDeclaration.isProtected()) {
-                return IconUtilities.createIconRow(icon, ApexIcons.PROTECTED);
-            }
-            if (apexDeclaration.isPrivate()) {
-                return IconUtilities.createIconRow(icon, ApexIcons.PRIVATE);
-            }
-            if (apexDeclaration.isPublic()) {
-                return IconUtilities.createIconRow(icon, ApexIcons.PUBLIC);
-            }
-            if (apexDeclaration.isGlobal()) {
-                return IconUtilities.createIconRow(icon, ApexIcons.GLOBAL);
-            }
-        }
-        return icon;
-    }
-
     public boolean isException() {
         return getVirtualFile().getNameWithoutExtension().endsWith("Exception");
     }
@@ -116,4 +70,7 @@ public class ApexClassFile extends PsiFileBase {
         return PsiTreeUtil.getChildOfType(this, ApexEnumDeclaration.class) != null;
     }
 
+    public boolean isTrigger() {
+        return PsiTreeUtil.getChildOfType(this, ApexTriggerDefinition.class) != null;
+    }
 }

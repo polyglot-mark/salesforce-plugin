@@ -150,6 +150,8 @@
 
         <gotoClassContributor implementation="au.com.borner.salesforce.plugin.apex.navigation.ApexGotoClassContributor"/>
 
+        <fileIconPatcher implementation="au.com.borner.salesforce.plugin.apex.ApexFileIconPatcher"/>
+
         <!-- Tool Window Factories -->
 
         <toolWindow id="Metadata Explorer" anchor="right" icon="/toolwindows/toolWindowStructure.png" factoryClass="au.com.borner.salesforce.plugin.toolwindow.metadata2.MetadataExplorerToolWindowFactory"/>

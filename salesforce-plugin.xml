@@ -18,8 +18,8 @@
     <property name="plugin.out" value="${project.out}/salesforce-plugin"/>
     <property name="plugin.jar" value="${plugin.out}/salesforce-plugin.jar"/>
 
-    <!--property name="idea.path" value="C:\Program Files (x86)\JetBrains\IntelliJ IDEA 12.1.4"/-->
-    <property name="idea.path" value="/Applications/IntelliJ IDEA 12.app"/>
+    <property name="idea.path" value="C:\Program Files (x86)\JetBrains\IntelliJ IDEA 13.0.2"/>
+    <!--<property name="idea.path" value="/Applications/IntelliJ IDEA 12.app"/>-->
 
     <path id="jkd.classpath">
         <fileset dir="${java.home}">

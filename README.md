@@ -4,7 +4,7 @@
 This project is a work in progress.  The goal is to provide a Java-like experience for doing full-lifecycle Apex
 development using IntelliJ IDEA.
 
-Features that are (mostly) working:
+*Features that are (mostly) working:*
 
 * Metadata Explorer Tool  Windows - browse all the metadata for your Salesforce organisation (including the Tooling
  API metadata)
@@ -13,22 +13,23 @@ Features that are (mostly) working:
 * Apex Syntax Highlighting - keyword highlighting and class structure recognition (this will be an ongoing process to
 fine tune the language recognition)
 * Click through references for class/interface names
+* Auto completion of class/interface names
 
-Supported File Types:
+*Supported File Types:*
 
 * Apex Triggers
 * Apex Interfaces
 * Apex Classes
 * Apex Enums
 
-Features under development:
+*Features under development:*
 
 * Execute Anonymous Tool Window
 * API Limits Tool Window
 * Import existing source code (from Eclipse project) into a Salesforce project
 * Rename, Find Usages support
 
-Future features:
+*Future features:*
 
 * Visualforce Page support
 * Visualforce Component support

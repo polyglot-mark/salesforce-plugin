@@ -1,5 +1,5 @@
 # Develop Apex with Pleasure!
-## An IntelliJ IDEA Plugin for Salesforce Development
+#### An IntelliJ IDEA Plugin for Salesforce Development
 
 This project is a work in progress.  The goal is to provide a Java-like experience for doing full-lifecycle Apex
 development using IntelliJ IDEA.

@@ -4,7 +4,7 @@ import au.com.borner.salesforce.client.rest.domain.AbstractSourceCode;
 import au.com.borner.salesforce.client.rest.domain.AbstractVisualForceSource;
 import au.com.borner.salesforce.plugin.service.ClientFactoryService;
 import au.com.borner.salesforce.plugin.service.VersionsService;
-import au.com.borner.salesforce.plugin.util.FileUtilities;
+import au.com.borner.salesforce.util.FileUtilities;
 import com.intellij.ide.actions.CreateFileFromTemplateDialog;
 import com.intellij.ide.actions.CreateTemplateInPackageAction;
 import com.intellij.ide.fileTemplates.FileTemplate;

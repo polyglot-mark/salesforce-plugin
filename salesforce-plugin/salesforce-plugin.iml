@@ -12,8 +12,8 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="salesforce-client" />
     <orderEntry type="module" module-name="salesforce-jps-plugin" />
-    <orderEntry type="library" name="commons-io-2.4" level="project" />
     <orderEntry type="library" name="json-20140107" level="project" />
+    <orderEntry type="library" name="salesforce-wsc" level="project" />
   </component>
 </module>
 

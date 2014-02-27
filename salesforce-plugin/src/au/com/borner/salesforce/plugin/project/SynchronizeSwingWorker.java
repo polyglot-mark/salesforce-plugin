@@ -2,7 +2,7 @@ package au.com.borner.salesforce.plugin.project;
 
 import au.com.borner.salesforce.client.rest.ToolingClient;
 import au.com.borner.salesforce.client.rest.domain.*;
-import au.com.borner.salesforce.plugin.util.FileUtilities;
+import au.com.borner.salesforce.util.FileUtilities;
 import com.intellij.openapi.diagnostic.Logger;
 
 import javax.swing.*;

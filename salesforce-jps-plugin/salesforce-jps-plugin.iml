@@ -8,6 +8,7 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module" module-name="salesforce-client" />
+    <orderEntry type="library" name="json-20140107" level="project" />
   </component>
 </module>
 

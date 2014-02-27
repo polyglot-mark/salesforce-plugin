@@ -11,6 +11,7 @@
     <orderEntry type="library" name="httpclient-4.3.2" level="project" />
     <orderEntry type="library" name="json-20140107" level="project" />
     <orderEntry type="library" name="salesforce-wsc" level="project" />
+    <orderEntry type="library" name="commons-io-2.4" level="project" />
   </component>
 </module>
 

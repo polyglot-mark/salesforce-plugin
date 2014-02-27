@@ -1,4 +1,20 @@
-package au.com.borner.salesforce.plugin.util;
+/*
+ * Copyright 2014 Mark Borner
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package au.com.borner.salesforce.util;
 
 import au.com.borner.salesforce.client.rest.domain.AbstractSourceCode;
 import au.com.borner.salesforce.client.rest.domain.SourceFileMetaData;
@@ -6,6 +22,7 @@ import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Pair;
 import com.intellij.openapi.vfs.VfsUtilCore;
 import com.intellij.openapi.vfs.VirtualFile;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,8 +42,8 @@ public abstract class FileUtilities {
         File localFile = new File(path + File.separator +  fileNameWithExtension);
         double crcResult;
         try {
-            org.apache.commons.io.FileUtils.writeStringToFile(localFile, sObject.getBody());
-            crcResult = org.apache.commons.io.FileUtils.checksumCRC32(localFile);
+            FileUtils.writeStringToFile(localFile, sObject.getBody());
+            crcResult = FileUtils.checksumCRC32(localFile);
         } catch (IOException e) {
             logger.error("Error creating file " + localFile.getPath());
             return false;
@@ -50,8 +67,19 @@ public abstract class FileUtilities {
     public static File createMetadataFile(String path, String fileNameWithExtension, AbstractSourceCode sObject) throws Exception {
         File metadataFile = new File(path + File.separator +  fileNameWithExtension + ".sfmd");
         SourceFileMetaData sourceFileMetaData = new SourceFileMetaData(fileNameWithExtension, sObject.getId(), sObject.getApiVersion());
-        org.apache.commons.io.FileUtils.writeStringToFile(metadataFile, sourceFileMetaData.toString());
+        FileUtils.writeStringToFile(metadataFile, sourceFileMetaData.toString());
         return metadataFile;
+    }
+
+    public static Pair<String, SourceFileMetaData> getFileContents(File file) throws Exception {
+        String body = FileUtils.readFileToString(file);
+        File metadataFile = new File(file.getPath() + ".sfmd");
+        if (!metadataFile.exists()) {
+            throw new IllegalStateException("Unable to find metadata file at " + metadataFile.getAbsolutePath());
+        }
+        String metadataContents = FileUtils.readFileToString(metadataFile);
+        SourceFileMetaData metadata = new SourceFileMetaData(metadataContents);
+        return new Pair<String, SourceFileMetaData>(body, metadata);
     }
 
     public static Pair<String,SourceFileMetaData> getFileContents(VirtualFile file) throws Exception {
@@ -65,4 +93,5 @@ public abstract class FileUtilities {
         SourceFileMetaData metadata = new SourceFileMetaData(metadataContents);
         return new Pair<String, SourceFileMetaData>(body, metadata);
     }
+
 }

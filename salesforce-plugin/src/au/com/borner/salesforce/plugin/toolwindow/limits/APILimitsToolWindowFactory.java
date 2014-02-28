@@ -2,7 +2,7 @@ package au.com.borner.salesforce.plugin.toolwindow.limits;
 
 import au.com.borner.salesforce.client.rest.domain.LimitResult;
 import au.com.borner.salesforce.client.rest.domain.LimitsResult;
-import au.com.borner.salesforce.plugin.service.ClientFactoryService;
+import au.com.borner.salesforce.plugin.service.RestClientService;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -33,8 +33,8 @@ public class APILimitsToolWindowFactory implements ToolWindowFactory {
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
-        ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
-        Map<LimitsResult.LimitType, LimitResult> limits = clientFactoryService.getDataClient().getLimits();
+        RestClientService restClientService = ServiceManager.getService(project, RestClientService.class);
+        Map<LimitsResult.LimitType, LimitResult> limits = restClientService.getLimits();
         LimitResult limitResult = limits.get(LimitsResult.LimitType.DailyApiRequests);
         apiRequestsMax.setText(String.format("%d", limitResult.getMax()));
         apiRequestsRemaining.setText(String.format("%d", limitResult.getRemaining()));

@@ -1,7 +1,7 @@
 package au.com.borner.salesforce.plugin.toolwindow.anonymous;
 
 import au.com.borner.salesforce.client.rest.domain.ExecuteAnonymousResult;
-import au.com.borner.salesforce.plugin.service.ClientFactoryService;
+import au.com.borner.salesforce.plugin.service.ToolingRestClientService;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.SimpleToolWindowPanel;
@@ -17,6 +17,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 /**
+ * A Tool Window for executing anonymous Apex
+ *
  * @author mark
  */
 public class ExecuteAnonymousToolWindowFactory implements ToolWindowFactory {
@@ -26,12 +28,12 @@ public class ExecuteAnonymousToolWindowFactory implements ToolWindowFactory {
     private JTextArea resultTextArea;
     private JPanel executeAnonymousPanel;
 
-    private ClientFactoryService clientFactoryService;
+    private ToolingRestClientService toolingRestClientService;
 
     @Override
     public void createToolWindowContent(Project project, ToolWindow toolWindow) {
 
-        clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
+        toolingRestClientService = ServiceManager.getService(project, ToolingRestClientService.class);
 
         SimpleToolWindowPanel panel = new SimpleToolWindowPanel(true, true);
         Content content = ContentFactory.SERVICE.getInstance().createContent(panel, "", false);
@@ -72,7 +74,7 @@ public class ExecuteAnonymousToolWindowFactory implements ToolWindowFactory {
                 if (inputTextArea.getText().length() == 0) {
                     // error
                 } else {
-                    ExecuteAnonymousResult result = clientFactoryService.getToolingClient().executeAnonymous(inputTextArea.getText());
+                    ExecuteAnonymousResult result = toolingRestClientService.executeAnonymous(inputTextArea.getText());
                     resultTextArea.setText(result.toString());
                     // Todo: get log results....
                 }

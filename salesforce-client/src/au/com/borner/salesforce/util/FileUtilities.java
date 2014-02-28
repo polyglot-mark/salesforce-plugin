@@ -94,4 +94,12 @@ public abstract class FileUtilities {
         return new Pair<String, SourceFileMetaData>(body, metadata);
     }
 
+    public static String filenameWithoutExtension(String filename) {
+        int pos = filename.lastIndexOf(".");
+        if (pos < 0) {
+            return filename;
+        }
+        return filename.substring(0,pos);
+    }
+
 }

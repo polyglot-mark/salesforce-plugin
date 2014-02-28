@@ -17,6 +17,8 @@
 package au.com.borner.salesforce.client.rest;
 
 /**
+ * A utility which translates the Environment setting to a login URL
+ *
  * @author mark
  */
 public class InstanceUtils {
@@ -26,13 +28,13 @@ public class InstanceUtils {
     public static final String PRE_RELEASE = "Pre-Release";
     public static final String OTHER = "Other";
 
-    public static String getOAuthHostForEnvironment(String environment) {
+    public static String getSoapLoginUrlForEnvironment(String environment) {
         if (environment.equals(PRODUCTION_DE)) {
-            return "login.salesforce.com";
+            return "https://login.salesforce.com/services/Soap/c/29.0";
         } else if (environment.equals(SANDBOX)) {
-            return "test.salesforce.com";
+            return "https://test.salesforce.com/services/Soap/c/29.0";
         } else if (environment.equals(PRE_RELEASE)) {
-            return "prerellogin.pre.salesforce.com";
+            return "https://prerellogin.pre.salesforce.com/services/Soap/c/29.0";
         } else {
             return null;
         }

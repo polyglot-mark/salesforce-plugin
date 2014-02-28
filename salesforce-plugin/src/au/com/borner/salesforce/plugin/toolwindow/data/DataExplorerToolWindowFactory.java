@@ -1,6 +1,7 @@
 package au.com.borner.salesforce.plugin.toolwindow.data;
 
-import au.com.borner.salesforce.plugin.service.ClientFactoryService;
+import au.com.borner.salesforce.plugin.service.RestClientService;
+import au.com.borner.salesforce.plugin.service.ToolingRestClientService;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerCellRenderer;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerCollapseAllAction;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerTreeExpansionListener;
@@ -49,8 +50,8 @@ public class DataExplorerToolWindowFactory implements ToolWindowFactory {
     }
 
     private void setupDataSplitPane(Project project) {
-        ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
-        SimpleNode dataRootNode = new DataExplorerRootNode(project, clientFactoryService.getDataClient(), "sObjects");
+        RestClientService restClientService = ServiceManager.getService(project, RestClientService.class);
+        SimpleNode dataRootNode = new DataExplorerRootNode(project, restClientService, "sObjects");
 
         SimpleTree dataTree = new SimpleTree();
         dataTree.setShowsRootHandles(true);
@@ -86,8 +87,8 @@ public class DataExplorerToolWindowFactory implements ToolWindowFactory {
     }
 
     private void setupToolingDataSplitPane(Project project) {
-        ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
-        SimpleNode toolingDataRootNode = new DataExplorerRootNode(project, clientFactoryService.getToolingClient(), "Tooling sObjects");
+        ToolingRestClientService toolingRestClientService = ServiceManager.getService(project, ToolingRestClientService.class);
+        SimpleNode toolingDataRootNode = new DataExplorerRootNode(project, toolingRestClientService, "Tooling sObjects");
 
         SimpleTree toolingDataTree = new SimpleTree();
         toolingDataTree.setShowsRootHandles(true);

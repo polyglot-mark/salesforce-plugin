@@ -2,7 +2,7 @@ package au.com.borner.salesforce.plugin.action;
 
 import au.com.borner.salesforce.client.rest.domain.AbstractSourceCode;
 import au.com.borner.salesforce.client.rest.domain.AbstractVisualForceSource;
-import au.com.borner.salesforce.plugin.service.ClientFactoryService;
+import au.com.borner.salesforce.plugin.service.ToolingRestClientService;
 import au.com.borner.salesforce.plugin.service.VersionsService;
 import au.com.borner.salesforce.util.FileUtilities;
 import com.intellij.ide.actions.CreateFileFromTemplateDialog;
@@ -106,7 +106,7 @@ public abstract class AbstractFileAction extends CreateTemplateInPackageAction<P
         ProgressManager.getInstance().run(new Task.Backgroundable(project, "Creating file in Salesforce", false, PerformInBackgroundOption.ALWAYS_BACKGROUND) {
             @Override
             public void run(@NotNull ProgressIndicator indicator) {
-                ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
+                ToolingRestClientService toolingRestClientService = ServiceManager.getService(project, ToolingRestClientService.class);
                 VersionsService versionsService = ServiceManager.getService(project, VersionsService.class);
                 AbstractSourceCode sObject = getNewSObject();
                 sObject.setBody(element.getText());
@@ -116,7 +116,7 @@ public abstract class AbstractFileAction extends CreateTemplateInPackageAction<P
                     avfs.setMasterLabel(className);
                 }
                 sObject.setApiVersion(versionsService.getLatestVersion().getAPIVersion());
-                sObject = clientFactoryService.getToolingClient().createSObject(sObject);
+                sObject = toolingRestClientService.createSObject(sObject);
                 try {
                     FileUtilities.createMetadataFile(psiDirectory.getVirtualFile().getPath(), fileName, sObject);
                 } catch (Exception e) {

@@ -12,18 +12,17 @@ import java.util.*;
  */
 public class VersionsService  {
 
-    private final ClientFactoryService clientFactoryService;
-
+    private final RestClientService restClientService;
     private List<APIVersionResult> apiVersionResults;
     private APIVersionResult latestVersion;
 
-    public VersionsService(ClientFactoryService clientFactoryService) {
-        this.clientFactoryService = clientFactoryService;
+    public VersionsService(RestClientService restClientService) {
+        this.restClientService = restClientService;
     }
 
     public List<APIVersionResult> getApiVersions() {
         if (apiVersionResults == null) {
-            apiVersionResults = clientFactoryService.getDataClient().getVersions();
+            apiVersionResults = restClientService.getVersions();
             Collections.sort(apiVersionResults, new Comparator<APIVersionResult>() {
                 @Override
                 public int compare(APIVersionResult o1, APIVersionResult o2) {

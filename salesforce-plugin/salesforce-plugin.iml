@@ -14,6 +14,7 @@
     <orderEntry type="module" module-name="salesforce-jps-plugin" />
     <orderEntry type="library" name="json-20140107" level="project" />
     <orderEntry type="library" name="salesforce-wsc" level="project" />
+    <orderEntry type="library" name="httpclient-4.3.2" level="project" />
   </component>
 </module>
 

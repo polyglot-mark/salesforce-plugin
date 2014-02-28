@@ -1,6 +1,7 @@
 package au.com.borner.salesforce.plugin.toolwindow.metadata2;
 
-import au.com.borner.salesforce.plugin.service.ClientFactoryService;
+import au.com.borner.salesforce.plugin.service.RestClientService;
+import au.com.borner.salesforce.plugin.service.ToolingRestClientService;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerCellRenderer;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerCollapseAllAction;
 import au.com.borner.salesforce.plugin.toolwindow.ExplorerTreeExpansionListener;
@@ -48,8 +49,8 @@ public class MetadataExplorerToolWindowFactory implements ToolWindowFactory {
     }
 
     private void setupMetadataPanel(Project project, SimpleToolWindowPanel metadataPanel) {
-        ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
-        SimpleNode metadataRootNode = new MetadataExplorerRootNode(project, clientFactoryService.getDataClient(), "Metadata");
+        RestClientService restClientService = ServiceManager.getService(project, RestClientService.class);
+        SimpleNode metadataRootNode = new MetadataExplorerRootNode(project, restClientService, "Metadata");
 
         SimpleTree metadataTree = new SimpleTree();
         SimpleTreeBuilder metadataTreeBuilder = new SimpleTreeBuilder(metadataTree, (DefaultTreeModel)metadataTree.getModel(), new ExplorerTreeStructure(metadataRootNode), null);
@@ -67,8 +68,8 @@ public class MetadataExplorerToolWindowFactory implements ToolWindowFactory {
     }
 
     private void setupToolingMetadataPanel(Project project, SimpleToolWindowPanel toolingMetadataPanel) {
-        ClientFactoryService clientFactoryService = ServiceManager.getService(project, ClientFactoryService.class);
-        SimpleNode toolingMetadataRootNode = new MetadataExplorerRootNode(project, clientFactoryService.getToolingClient(), " Tooling Metadata");
+        ToolingRestClientService toolingRestClientService = ServiceManager.getService(project, ToolingRestClientService.class);
+        SimpleNode toolingMetadataRootNode = new MetadataExplorerRootNode(project, toolingRestClientService, " Tooling Metadata");
 
         SimpleTree toolingMetadataTree = new SimpleTree();
         SimpleTreeBuilder toolingMetadataTreeBuilder = new SimpleTreeBuilder(toolingMetadataTree, (DefaultTreeModel)toolingMetadataTree.getModel(), new ExplorerTreeStructure(toolingMetadataRootNode), null);

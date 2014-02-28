@@ -16,7 +16,6 @@
 
 package au.com.borner.salesforce.client.rest;
 
-import au.com.borner.salesforce.client.rest.ConnectionManager;
 import au.com.borner.salesforce.client.rest.domain.*;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
@@ -27,7 +26,7 @@ import java.util.List;
 /**
  * The base class for all API clients
  *
- * @author Mark Borner (gzhomzb)
+ * @author Mark
  */
 public abstract class AbstractRestClient {
 

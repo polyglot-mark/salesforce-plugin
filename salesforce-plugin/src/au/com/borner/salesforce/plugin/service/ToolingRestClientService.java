@@ -16,16 +16,16 @@
 
 package au.com.borner.salesforce.plugin.service;
 
-import au.com.borner.salesforce.client.rest.RestClient;
+import au.com.borner.salesforce.client.rest.ToolingRestClient;
 
 /**
- * A Project Service which wraps the Rest Client and instantiates it from the Connection Manager Service
+ * A Project service which wraps the Tooling Rest Client and instantiates it from a Connection Manager Service
  *
- * Created by gzhomzb
+ * Created by mark
  */
-public class RestClientService extends RestClient {
+public class ToolingRestClientService extends ToolingRestClient {
 
-    public RestClientService(ConnectionManagerService connectionManagerService) {
+    public ToolingRestClientService(ConnectionManagerService connectionManagerService) {
         super(connectionManagerService);
     }
 

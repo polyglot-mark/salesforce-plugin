@@ -35,6 +35,14 @@ fine tune the language recognition)
 * Visualforce Component support
 * Creating Trigger from Metadata Explorer Tool Window
 * Creating SOQL statement from Metadata Explorer Tool Window
+* Run configurations for compile with/without tests, running just tests, etc
+* Annotator for highlighting test coverage on class files
+* Debugger?
+* File synchronisation (changes in cloud get automatically synced locally)
+* Delete support (delete file locally deletes in cloud)
+* Full Sync / Full Deploy actions
+* Download metadata and index for code completion
+* Filter results in Data Explorer Tool Window
 
 # How to build and install
 

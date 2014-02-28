@@ -85,18 +85,31 @@
             serviceInterface="au.com.borner.salesforce.plugin.settings.project.ProjectSettingsPersistentStateComponent"/>
 
         <projectService
-            serviceImplementation="au.com.borner.salesforce.plugin.service.ClientFactoryService"
-            serviceInterface="au.com.borner.salesforce.plugin.service.ClientFactoryService"/>
+            serviceInterface="au.com.borner.salesforce.plugin.service.SoapClientService"
+            serviceImplementation="au.com.borner.salesforce.plugin.service.SoapClientService"/>
         
         <projectService
-            serviceImplementation="au.com.borner.salesforce.plugin.service.VersionsService"
-            serviceInterface="au.com.borner.salesforce.plugin.service.VersionsService"/>
+            serviceInterface="au.com.borner.salesforce.plugin.service.ConnectionManagerService"
+            serviceImplementation="au.com.borner.salesforce.plugin.service.ConnectionManagerService"/>
+        
+        <projectService
+            serviceInterface="au.com.borner.salesforce.plugin.service.RestClientService"
+            serviceImplementation="au.com.borner.salesforce.plugin.service.RestClientService"/>
+        
+        <projectService
+            serviceInterface="au.com.borner.salesforce.plugin.service.ToolingRestClientService"
+            serviceImplementation="au.com.borner.salesforce.plugin.service.ToolingRestClientService"/>
+        
+        <projectService
+            serviceInterface="au.com.borner.salesforce.plugin.service.VersionsService"
+            serviceImplementation="au.com.borner.salesforce.plugin.service.VersionsService"/>
 
         <moduleType id="SALESFORCE_MODULE" implementationClass="au.com.borner.salesforce.plugin.project.SalesForceModuleType"/>
 
         <sdkType id="SALESFORCE_SDK" implementation="au.com.borner.salesforce.plugin.sdk.SalesForceSdkType"/>
 
-        <compileServer.plugin classpath="salesforce-jps-plugin.jar"/>
+        <buildProcess.parametersProvider implementation="au.com.borner.salesforce.plugin.build.SalesForceBuildProcessParametersProvider"/>
+        <compileServer.plugin classpath="salesforce-jps-plugin.jar;enterprise.jar;metadata.jar;apex.jar;force-wsc-30.0.0.jar;json-20140107.jar;httpcore-4.3.1.jar;httpclient-4.3.2.jar;commons-logging-1.1.3.jar"/>
 
         <internalFileTemplate name="ApexClass"/>
         <internalFileTemplate name="ApexInterface"/>

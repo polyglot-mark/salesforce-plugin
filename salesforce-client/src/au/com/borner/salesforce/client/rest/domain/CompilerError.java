@@ -16,12 +16,19 @@
 
 package au.com.borner.salesforce.client.rest.domain;
 
+import com.intellij.openapi.util.Pair;
 import org.json.JSONException;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * @author Mark Borner (gzhomzb)
  */
 public class CompilerError extends AbstractJSONObject {
+
+    private Pattern pattern = Pattern.compile("line (\\d)\\:(\\d+).*");
+    private String adjustedProblem;
 
     public CompilerError(String string) throws JSONException {
         super(string);
@@ -44,6 +51,28 @@ public class CompilerError extends AbstractJSONObject {
     }
 
     public String getProblem() {
-        return getString("problem");
+        if (adjustedProblem == null) {
+            return getString("problem");
+        } else {
+            return adjustedProblem;
+        }
     }
+
+    public Pair<Integer,Integer> getLocation() {
+        String problem = getProblem();
+        Matcher matcher = pattern.matcher(problem);
+        if (matcher.matches()) {
+            int start = matcher.start(1);
+            int end = matcher.end(1);
+            Integer row = Integer.parseInt(problem.substring(start, end));
+            start = matcher.start(2);
+            end = matcher.end(2);
+            Integer column = Integer.parseInt(problem.substring(start, end));
+            adjustedProblem = problem.substring(end);
+            return new Pair<Integer, Integer>(row, ++column);
+        } else {
+            return null;
+        }
+    }
+
 }

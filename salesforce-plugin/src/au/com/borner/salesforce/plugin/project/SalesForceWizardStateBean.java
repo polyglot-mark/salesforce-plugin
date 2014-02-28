@@ -1,6 +1,7 @@
 package au.com.borner.salesforce.plugin.project;
 
 import au.com.borner.salesforce.client.rest.ConnectionManager;
+import au.com.borner.salesforce.client.rest.InstanceCredentials;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class SalesForceWizardStateBean {
     private boolean syncTriggers;
     private boolean syncPages;
     private boolean syncComponents;
-    private ConnectionManager connectionManager;
+    private InstanceCredentials instanceCredentials;
     private Map<FOLDER_NAMES, String> createdFolders = new HashMap<FOLDER_NAMES, String>();
 
     public String getSelectedInstance() {
@@ -62,19 +63,19 @@ public class SalesForceWizardStateBean {
         this.syncComponents = syncComponents;
     }
 
-    public ConnectionManager getConnectionManager() {
-        return connectionManager;
-    }
-
-    public void setConnectionManager(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
-    }
-
     public void addCreatedFolder(FOLDER_NAMES name, String path) {
         createdFolders.put(name, path);
     }
 
     public String getFolderPath(FOLDER_NAMES name) {
         return createdFolders.get(name);
+    }
+
+    public InstanceCredentials getInstanceCredentials() {
+        return instanceCredentials;
+    }
+
+    public void setInstanceCredentials(InstanceCredentials instanceCredentials) {
+        this.instanceCredentials = instanceCredentials;
     }
 }

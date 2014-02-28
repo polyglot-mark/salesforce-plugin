@@ -18,12 +18,7 @@ package au.com.borner.salesforce.client.rest;
 
 import au.com.borner.salesforce.client.rest.domain.*;
 import com.intellij.openapi.diagnostic.Logger;
-import com.intellij.openapi.util.text.StringUtil;
-import com.intellij.util.net.HttpConfigurable;
 import org.apache.http.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -35,11 +30,10 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContexts;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.Nullable;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
@@ -48,29 +42,26 @@ import java.net.URI;
 import java.util.List;
 
 /**
- * The Connection Manager to the Salesforce APIs
+ * The Rest Connection Manager
  *
  * @author mark
  */
 public class ConnectionManager {
 
-    private static final String LOGIN_PATH = "/services/oauth2/token";
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
     private static final String HTTPS = "https";
     private static final int PORT_443 = 443;
 
     private Logger logger = Logger.getInstance(getClass());
-    private final InstanceCredentials instanceCredentials;
     private final HttpClient httpClient;
 
     private boolean loggedIn = false;
     private String token;
     private String instanceHost;
 
-    public ConnectionManager(InstanceCredentials instanceCredentials) {
-        this.instanceCredentials = instanceCredentials;
-
+    public ConnectionManager() {
+        loggedIn = false;
         SSLContext sslContext = SSLContexts.createSystemDefault();
         LayeredConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(sslContext);
 
@@ -81,46 +72,19 @@ public class ConnectionManager {
         HttpCompressionRequestInterceptor requestInterceptor = new HttpCompressionRequestInterceptor();
         HttpCompressionResponseInterceptor responseInterceptor = new HttpCompressionResponseInterceptor();
 
-        // Get the proxy settings from the Intellij IDEA settings
-        HttpConfigurable httpConfigurable = HttpConfigurable.getInstance();
-        if (httpConfigurable.USE_HTTP_PROXY && !StringUtil.isEmptyOrSpaces(httpConfigurable.PROXY_HOST)) {
+        httpClient = HttpClients.custom()
+                .setConnectionManager(pcm)
+                .setSSLSocketFactory(sslSocketFactory)
+                .addInterceptorFirst(requestInterceptor)
+                .addInterceptorFirst(responseInterceptor)
+                .build();
+    }
 
-            logger.warn("Using HTTP proxy for outgoing connections");
-            // Create HttpClient configured with a proxy
-            HttpHost proxy = new HttpHost(httpConfigurable.PROXY_HOST, httpConfigurable.PROXY_PORT);
-            DefaultProxyRoutePlanner proxyRoutePlanner = new DefaultProxyRoutePlanner(proxy);
-            if (httpConfigurable.PROXY_AUTHENTICATION) {
-                logger.warn("Using proxy authentication");
-                // Create HttpClient configured with a proxy and authentication details
-                CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-                credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(httpConfigurable.PROXY_LOGIN, httpConfigurable.getPlainProxyPassword()));
-                httpClient = HttpClients.custom()
-                        .setRoutePlanner(proxyRoutePlanner)
-                        .setConnectionManager(pcm)
-                        .setSSLSocketFactory(sslSocketFactory)
-                        .setDefaultCredentialsProvider(credentialsProvider)
-                        .addInterceptorFirst(requestInterceptor)
-                        .addInterceptorFirst(responseInterceptor)
-                        .build();
-            } else {
-                // Create HttpClient configured withOUT a proxy and authentication details
-                httpClient = HttpClients.custom()
-                        .setRoutePlanner(proxyRoutePlanner)
-                        .setConnectionManager(pcm)
-                        .setSSLSocketFactory(sslSocketFactory)
-                        .addInterceptorFirst(requestInterceptor)
-                        .addInterceptorFirst(responseInterceptor)
-                        .build();
-            }
-        } else {
-            // Create HttpClient withOUT a proxy
-            httpClient = HttpClients.custom()
-                    .setConnectionManager(pcm)
-                    .setSSLSocketFactory(sslSocketFactory)
-                    .addInterceptorFirst(requestInterceptor)
-                    .addInterceptorFirst(responseInterceptor)
-                    .build();
-        }
+    public void setSessionDetails(@Nullable String token, @Nullable String instanceHost) {
+        if (token == null || instanceHost == null) return;
+        this.token = token;
+        this.instanceHost = instanceHost;
+        this.loggedIn = true;
     }
 
     // HTTP get methods
@@ -157,9 +121,6 @@ public class ConnectionManager {
     // ------------------
 
     private URI buildUri(String path, List<NameValuePair> parameters) {
-        if (!loggedIn) {
-            login();  // We need to login first so we can get the instanceHost!
-        }
         try {
             if (parameters == null) {
                 return new URIBuilder()
@@ -182,17 +143,17 @@ public class ConnectionManager {
         }
     }
 
-    private <Response extends AbstractJSONObject> Response execute(HttpRequestBase request, Class<Response> responseClass) {
+    protected <Response extends AbstractJSONObject> Response execute(HttpRequestBase request, Class<Response> responseClass) {
+        if (!loggedIn) {
+            throw new ConnectionSessionException("You are not logged into Salesforce");
+        }
         try {
-            if (!loggedIn) {
-                login();
-            }
             request.setHeader("Accept-Encoding", "gzip");
             return doExecute(request, responseClass);
         } catch (ConnectionSessionException cse) {
-            logger.debug("Connection Session Exception thrown - trying to log back in", cse);
-            login();
-            return doExecute(request, responseClass);
+            logger.debug("Connection Session Exception thrown", cse);
+            loggedIn = false;
+            throw  cse;
         }
     }
 
@@ -226,35 +187,39 @@ public class ConnectionManager {
         }
     }
 
-    public void login() {
-        try {
-            URI uri = new URIBuilder()
-                    .setScheme("https")
-                    .setHost(InstanceUtils.getOAuthHostForEnvironment(instanceCredentials.getEnvironment()))
-                    .setPort(443)
-                    .setPath(LOGIN_PATH)
-                    .setParameter("grant_type", "password")
-                    .setParameter("client_id", instanceCredentials.getConsumerKey())
-                    .setParameter("client_secret", instanceCredentials.getConsumerSecret())
-                    .setParameter("username", instanceCredentials.getUsername())
-                    .setParameter("password", instanceCredentials.getPassword() + instanceCredentials.getSecurityToken())
-                    .build();
-
-            HttpPost post = new HttpPost(uri);
-            HttpResponse httpResponse= httpClient.execute(post);
-            String responseString = EntityUtils.toString(httpResponse.getEntity());
-            checkResponseForError(httpResponse.getStatusLine().getStatusCode(), responseString);
-            LoginResponse response = new LoginResponse(responseString);
-            response.verify(instanceCredentials.getConsumerSecret());  // verifies the signature on the login response
-            instanceHost = response.getInstanceHost();
-            token = response.getToken();
-            loggedIn = true;
-
-        } catch (Exception e) {
-            loggedIn = false;
-            throw new ConnectionException("An error occurred while logging into Salesforce", e);
-        }
-    }
+// I'm keeping this block of code here as an example of how to login using REST in case I ever need it
+//
+//    private static final String LOGIN_PATH = "/services/oauth2/token";
+//
+//    public void login() {
+//        try {
+//            URI uri = new URIBuilder()
+//                    .setScheme("https")
+//                    .setHost(InstanceUtils.getSoapLoginUrlForEnvironment(instanceCredentials.getEnvironment()))
+//                    .setPort(443)
+//                    .setPath(LOGIN_PATH)
+//                    .setParameter("grant_type", "password")
+//                    .setParameter("client_id", instanceCredentials.getConsumerKey())
+//                    .setParameter("client_secret", instanceCredentials.getConsumerSecret())
+//                    .setParameter("username", instanceCredentials.getUsername())
+//                    .setParameter("password", instanceCredentials.getPassword() + instanceCredentials.getSecurityToken())
+//                    .build();
+//
+//            HttpPost post = new HttpPost(uri);
+//            HttpResponse httpResponse= httpClient.execute(post);
+//            String responseString = EntityUtils.toString(httpResponse.getEntity());
+//            checkResponseForError(httpResponse.getStatusLine().getStatusCode(), responseString);
+//            LoginResponse response = new LoginResponse(responseString);
+//            response.verify(instanceCredentials.getConsumerSecret());  // verifies the signature on the login response
+//            instanceHost = response.getInstanceHost();
+//            token = response.getToken();
+//            loggedIn = true;
+//
+//        } catch (Exception e) {
+//            loggedIn = false;
+//            throw new ConnectionException("An error occurred while logging into Salesforce", e);
+//        }
+//    }
 
     private void checkResponseForError(int statusCode, String responseString)  {
         if (statusCode >= 200 && statusCode < 300) {

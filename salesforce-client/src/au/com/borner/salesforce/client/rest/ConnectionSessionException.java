@@ -26,6 +26,10 @@ import au.com.borner.salesforce.client.rest.domain.ErrorsResponse;
  */
 public class ConnectionSessionException extends ConnectionException {
 
+    public ConnectionSessionException(String message) {
+        super(message);
+    }
+
     public ConnectionSessionException(ErrorsResponse errorsResponse, int statusCode, String defaultMessage) {
         super(errorsResponse, statusCode, defaultMessage);
     }

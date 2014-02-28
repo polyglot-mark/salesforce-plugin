@@ -18,17 +18,12 @@ package au.com.borner.salesforce.jps;
 
 import au.com.borner.salesforce.client.rest.ConnectionManager;
 import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.client.rest.ToolingClient;
 import au.com.borner.salesforce.client.rest.ToolingRestClient;
 import au.com.borner.salesforce.client.rest.domain.*;
-import au.com.borner.salesforce.client.rest.impl.ToolingRestClientImpl;
 import au.com.borner.salesforce.client.wsc.SoapClient;
-import au.com.borner.salesforce.client.wsc.impl.SoapClientImpl;
 import au.com.borner.salesforce.util.FileUtilities;
-import com.intellij.openapi.compiler.CompilerMessageCategory;
 import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Pair;
-import com.intellij.openapi.vfs.VirtualFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
@@ -43,9 +38,13 @@ import java.io.IOException;
 import java.util.*;
 
 /**
+ * The Salesforce Module Level Builder (aka Compiler)
+ *
  * @author mark
  */
 public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
+
+    private static final String EMPTY = "";
 
     public SalesForceModuleLevelBuilder() {
         super(BuilderCategory.TRANSLATOR);
@@ -57,19 +56,24 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
                           DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder,
                           OutputConsumer outputConsumer) throws ProjectBuildException, IOException {
 
-        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.INFO, "Starting Salesforce Compiler"));
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Starting Salesforce Compiler"));
         SalesForceProjectSettings projectSettings = SalesForceProjectSettings.getSettings(context.getProjectDescriptor().getProject());
 
         // Step 1: login to Salesforce
-        // TODO: do we need to login again?  Or reuse session id??
-        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.INFO, "Logging into Salesforce using instance named: " + projectSettings.instanceName));
-        SoapClient soapClient = new SoapClientImpl();
-        String sessionId = soapClient.login(new InstanceCredentials());
-        ConnectionManager connectionManager = new ConnectionManager(new InstanceCredentials());
-        final ToolingRestClient toolingRestClient = new ToolingRestClientImpl(connectionManager);
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Logging into Salesforce"));
+        InstanceCredentials instanceCredentials = new InstanceCredentials("Compile");
+        instanceCredentials.setUsername(System.getProperty("username"));
+        instanceCredentials.setPassword(System.getProperty("password"));
+        instanceCredentials.setSecurityToken(System.getProperty("securityToken"));
+        instanceCredentials.setEnvironment(System.getProperty("environment"));
+        SoapClient soapClient = new SoapClient();
+        soapClient.login(instanceCredentials, Boolean.getBoolean(System.getProperty("traceMessages")));
+        ConnectionManager connectionManager = new ConnectionManager();
+        connectionManager.setSessionDetails(soapClient.getSessionId(), soapClient.getServiceHost());
+        final ToolingRestClient toolingRestClient = new ToolingRestClient(connectionManager);
 
         // Step 2: create Metadata container
-        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.INFO, "Creating Metadata Container"));
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Creating Metadata Container"));
         String containerId = UUID.randomUUID().toString().replaceAll("-", "");
         final MetadataContainer metadataContainer = toolingRestClient.createSObject(new MetadataContainer(containerId));
 
@@ -78,20 +82,21 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         dirtyFilesHolder.processDirtyFiles(new FileProcessor<JavaSourceRootDescriptor, ModuleBuildTarget>() {
             @Override
             public boolean apply(ModuleBuildTarget target, File file, JavaSourceRootDescriptor root) throws IOException {
-                fileNameToUrlMap.put(file.getName(), file.getAbsolutePath());
+                fileNameToUrlMap.put(FileUtilities.filenameWithoutExtension(file.getName()), file.getAbsolutePath());
                 uploadSource(file, metadataContainer, context, toolingRestClient);
                 return true;
             }
         });
 
         // Step 4: invoke the Salesforce compiler
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Requesting Async Compile"));
         ContainerAsyncRequest containerAsyncRequest = new ContainerAsyncRequest(metadataContainer);
         containerAsyncRequest = toolingRestClient.createSObject(containerAsyncRequest);
         int retryCount = 0;
         // TODO: make these parameters configurable because large amount of source files will take longer to compile!
         while ((containerAsyncRequest.getState() == null || containerAsyncRequest.getState().equals(ContainerAsyncRequest.State.Queued)) && ++retryCount < 60) {
             try {
-                Thread.sleep(3000);
+                Thread.sleep(5000);
             } catch (Exception e) {
                 // ignore
             }
@@ -99,48 +104,56 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         }
 
         // Step 5: check result
-        if (containerAsyncRequest.getState() == null || !containerAsyncRequest.getState().equals(ContainerAsyncRequest.State.Completed)) {
-            context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, "Compile has timed out"));
+        if (containerAsyncRequest.getState() == null || containerAsyncRequest.getState().equals(ContainerAsyncRequest.State.Queued)) {
+            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, "Compile has timed out"));
+            soapClient.logoff();
             return ExitCode.ABORT;
         }
 
         ExitCode exitCode = ExitCode.OK;
         switch (containerAsyncRequest.getState()) {
             case Completed:
-                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.INFO, "Compilation was successful"));
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.INFO, "Compilation was successful"));
                 break;
             case Error:
-                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, "A compiler error occurred " + containerAsyncRequest.getErrorMsg()));
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, "A compiler error occurred " + containerAsyncRequest.getErrorMsg()));
                 exitCode = ExitCode.ABORT;
                 break;
             case Failed:
                 List<CompilerError> compilerErrors = containerAsyncRequest.getCompilerErrors();
                 if (compilerErrors.size() == 0) {
-                    context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, "Compilation failed"));
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, "Compilation failed"));
                 } else {
                     for (CompilerError compilerError : compilerErrors) {
                         String filePath = fileNameToUrlMap.get(compilerError.getName());
-                        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, compilerError.getProblem(), filePath, -1, -1, -1, compilerError.getLine(), -1));
+                        Pair<Integer,Integer> location = compilerError.getLocation();
+                        if (location == null) {
+                            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, compilerError.getProblem(), filePath, -1, -1, -1, compilerError.getLine(), 0));
+                        } else {
+                            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, compilerError.getProblem(), filePath, -1, -1, -1, location.first, location.second));
+                        }
                     }
                 }
                 exitCode = ExitCode.ABORT;
                 break;
             case Invalidated:
-                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "The compilation was invalidated by the server"));
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.WARNING, "The compilation was invalidated by the server"));
                 exitCode = ExitCode.CHUNK_REBUILD_REQUIRED;
                 break;
             case Aborted:
-                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "The compilation was aborted"));
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.WARNING, "The compilation was aborted"));
                 exitCode = ExitCode.CHUNK_REBUILD_REQUIRED;
                 break;
             default:
-                context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, "An unknown error occurred"));
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, "An unknown error occurred"));
                 exitCode = ExitCode.ABORT;
                 break;
         }
 
-        context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.INFO, "Deleting Metadata Container"));
+        // Step 6: Delete metadata container and logoff
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Deleting Metadata Container"));
         toolingRestClient.deleteSObject(metadataContainer);
+        soapClient.logoff();
         return exitCode;
     }
 
@@ -168,7 +181,7 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         } else if (file.getName().endsWith(".component")){
             member = new VisualForceComponentMember(metadataContainer);
         } else {
-            context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.WARNING, "Unknown file type: " + file.getAbsolutePath()));
+            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.WARNING, "Unknown file type: " + file.getAbsolutePath()));
             return;
         }
 
@@ -176,12 +189,13 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         try {
             filePair = FileUtilities.getFileContents(file);
         } catch (Exception exception) {
-            context.processMessage(new CompilerMessage(getPresentableName(), BuildMessage.Kind.ERROR, "Unable to read local file: " + file.getName()));
+            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, "Unable to read local file: " + file.getName()));
             return;  // TODO: throw exception?
         }
         member.setBody(filePair.getFirst());
         member.setContentEntityId(filePair.getSecond().getId());
         toolingRestClient.createSObject(member);
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Uploading " + file.getName()));
     }
 
 }

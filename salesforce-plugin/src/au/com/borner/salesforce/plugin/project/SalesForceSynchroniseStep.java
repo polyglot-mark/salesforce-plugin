@@ -1,6 +1,6 @@
 package au.com.borner.salesforce.plugin.project;
 
-import au.com.borner.salesforce.client.rest.ToolingClient;
+import au.com.borner.salesforce.client.rest.ToolingRestClient;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;
 import com.intellij.ide.wizard.CommitStepException;
 import com.intellij.openapi.diagnostic.Logger;
@@ -47,8 +47,7 @@ public class SalesForceSynchroniseStep extends ModuleWizardStep {
         }
         synchronizing = true;
         createFolders();
-        ToolingClient toolingClient = new ToolingClient(stateBean.getConnectionManager());
-        SynchronizeSwingWorker swingWorker = new SynchronizeSwingWorker(toolingClient, statusArea, stateBean, new SynchronizeSwingWorker.DoneCallBack() {
+        SynchronizeSwingWorker swingWorker = new SynchronizeSwingWorker(statusArea, stateBean, new SynchronizeSwingWorker.DoneCallBack() {
             @Override
             public void done() {
                 synchronizing = false;

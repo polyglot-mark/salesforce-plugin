@@ -16,17 +16,29 @@
 
 package au.com.borner.salesforce.client.rest;
 
-import au.com.borner.salesforce.client.rest.domain.*;
+import au.com.borner.salesforce.client.rest.domain.LimitResult;
+import au.com.borner.salesforce.client.rest.domain.LimitsResult;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
 /**
- * An interface for a Salesforce Rest API client
+ * The client for the Salesforce Rest API
  *
- * Created by gzhomzb
+ * @author mark
  */
-public interface RestClient extends Client{
+public class RestClient extends AbstractRestClient {
 
-    public Map<LimitsResult.LimitType, LimitResult> getLimits();
+    private static final String LIMITS = "/limits/";
+
+    public RestClient(@NotNull ConnectionManager connectionManager) {
+        super(connectionManager);
+    }
+
+    @NotNull
+    public Map<LimitsResult.LimitType, LimitResult> getLimits() {
+        LimitsResult result = connectionManager.executeGet(getDefaultServicesUri() + LIMITS, LimitsResult.class);
+        return result.getLimits();
+    }
 
 }

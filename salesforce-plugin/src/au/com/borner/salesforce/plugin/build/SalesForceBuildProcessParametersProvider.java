@@ -14,37 +14,52 @@
  * limitations under the License.
  */
 
-package au.com.borner.salesforce.plugin.service;
+package au.com.borner.salesforce.plugin.build;
 
 import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.client.wsc.SoapClient;
+import au.com.borner.salesforce.plugin.service.SoapClientService;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import au.com.borner.salesforce.plugin.settings.project.ProjectSettingsPersistentStateComponent;
+import com.intellij.compiler.server.BuildProcessParametersProvider;
 import com.intellij.openapi.project.Project;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- * A Project Service which wraps the Soap Client implementation and gets the credentials from the
- * Project's persistent state components
+ * This Build Process Parameters Provider add a VM argument to the invocation of
+ * the Build Server.  The parameters is a -D define with the session Id for
+ * Salesforce.
  *
- * Created by gzhomzb
+ * @see au.com.borner.salesforce.jps.SalesForceModuleLevelBuilder
+ * @see au.com.borner.salesforce.jps.SalesForceBuilderService
+ *
+ * Created by mark
  */
-public class SoapClientService extends SoapClient {
+public class SalesForceBuildProcessParametersProvider extends BuildProcessParametersProvider {
 
     private final Project project;
 
-    public SoapClientService(@NotNull Project project) {
+    public SalesForceBuildProcessParametersProvider(Project project) {
         this.project = project;
-        login();
     }
 
-    public void login() {
+    @NotNull
+    @Override
+    public List<String> getVMArguments() {
+        List<String> arguments = new ArrayList<String>(1);
         ProjectSettingsPersistentStateComponent projectSettings = ProjectSettingsPersistentStateComponent.getInstance(project);
         InstancesPersistentStateComponent instanceSettings = InstancesPersistentStateComponent.getInstance();
         InstanceCredentials instanceCredentials = instanceSettings.getInstance(projectSettings.instanceName);
         if (instanceCredentials != null) {
-            login(instanceCredentials, true);  // TODO: make traceMessages a Plugin level Setting
+            arguments.add("-Dusername=" + instanceCredentials.getUsername());
+            arguments.add("-Dpassword=" + instanceCredentials.getPassword());
+            arguments.add("-DsecurityToken=" + instanceCredentials.getSecurityToken());
+            arguments.add("-Denvironment=" + instanceCredentials.getEnvironment());
+            arguments.add("-DtraceMessages=true");
         }
+        return arguments;
     }
 
 }

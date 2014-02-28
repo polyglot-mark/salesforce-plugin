@@ -12,14 +12,11 @@ import org.jetbrains.annotations.NotNull;
  */
 public class SynchronisationService implements ProjectComponent {
 
-    private static Logger logger = Logger.getInstance(SynchronisationService.class);
     private final FileEventsListener fileEventsListener;
     private final Project project;
-    private final ClientFactoryService clientFactoryService;
 
-    public SynchronisationService(Project project, ClientFactoryService clientFactoryService) {
+    public SynchronisationService(Project project) {
         this.project = project;
-        this.clientFactoryService = clientFactoryService;
         fileEventsListener = new FileEventsListener(project);
     }
 

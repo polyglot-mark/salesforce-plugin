@@ -1,6 +1,5 @@
 package au.com.borner.salesforce.plugin.project;
 
-import au.com.borner.salesforce.client.rest.ConnectionManager;
 import au.com.borner.salesforce.client.rest.InstanceCredentials;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import au.com.borner.salesforce.plugin.settings.project.InstanceSelectionPanel;
@@ -41,7 +40,6 @@ public class SalesForceInstanceSelectionStep extends ModuleWizardStep {
     public void updateDataModel() {
         stateBean.setSelectedInstance(instanceSelectionPanel.getSelectedInstance());
         InstanceCredentials instanceCredentials = instancesPersistentStateComponent.getInstance(stateBean.getSelectedInstance());
-        ConnectionManager connectionManager = new ConnectionManager(instanceCredentials);
-        stateBean.setConnectionManager(connectionManager);
+        stateBean.setInstanceCredentials(instanceCredentials);
     }
 }

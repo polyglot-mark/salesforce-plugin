@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonShortcuts;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.options.SearchableConfigurable;
-import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.MasterDetailsComponent;
@@ -123,7 +122,7 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
         List<String> currentNames = new ArrayList<String>(myRoot.getChildCount());
         for (int i=0; i<myRoot.getChildCount(); i++) {
             MyNode node = (MyNode)myRoot.getChildAt(i);
-            InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
+            InstanceNamedConfigurable instanceNamedConfigurable = (InstanceNamedConfigurable)node.getConfigurable();
             currentNames.add(instanceNamedConfigurable.getEditableObject().getName());
         }
         // Now flip through all the persisted names, and if they don't exist on the settings page, delete them
@@ -173,16 +172,16 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
     // Helper methods
 
     private void addNewInstanceNode(InstanceCredentials instance) {
-        InstanceNamedConfigurable2 namedConfigurable = new InstanceNamedConfigurable2(instance, TREE_UPDATER, true);
+        InstanceNamedConfigurable namedConfigurable = new InstanceNamedConfigurable(instance, TREE_UPDATER, true);
         addNode(namedConfigurable);
     }
 
     private void addInstanceNode(InstanceCredentials instance) {
-        InstanceNamedConfigurable2 namedConfigurable = new InstanceNamedConfigurable2(instance, TREE_UPDATER, false);
+        InstanceNamedConfigurable namedConfigurable = new InstanceNamedConfigurable(instance, TREE_UPDATER, false);
         addNode(namedConfigurable);
     }
 
-    private void addNode(InstanceNamedConfigurable2 namedConfigurable) {
+    private void addNode(InstanceNamedConfigurable namedConfigurable) {
         MyNode node = new MyNode(namedConfigurable);
         addNode(node, myRoot);
         selectNodeInTree(node);
@@ -192,7 +191,7 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
         List<String> currentNames = new ArrayList<String>(myRoot.getChildCount());
         for (int i=0; i<myRoot.getChildCount(); i++) {
             MyNode node = (MyNode)myRoot.getChildAt(i);
-            InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
+            InstanceNamedConfigurable instanceNamedConfigurable = (InstanceNamedConfigurable)node.getConfigurable();
             currentNames.add(instanceNamedConfigurable.getEditableObject().getName());
         }
         return currentNames;
@@ -210,7 +209,7 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
                 }
                 for (int i=0; i<myRoot.getChildCount(); i++) {
                     MyNode node = (MyNode)myRoot.getChildAt(i);
-                    InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
+                    InstanceNamedConfigurable instanceNamedConfigurable = (InstanceNamedConfigurable)node.getConfigurable();
                     if (instanceName.equals(instanceNamedConfigurable.getEditableObject().getName())) {
                         return false;
                     }

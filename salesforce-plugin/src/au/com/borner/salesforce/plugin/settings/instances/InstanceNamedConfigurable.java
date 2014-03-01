@@ -35,13 +35,13 @@ import java.awt.event.ActionListener;
  *
  * Created by mark
  */
-public class InstanceNamedConfigurable2 extends NamedConfigurable<InstanceCredentials> {
+public class InstanceNamedConfigurable extends NamedConfigurable<InstanceCredentials> {
 
     private boolean isNew;
     private final InstanceCredentials instanceCredentials;
     private final InstanceCredentialsPanel instanceCredentialsPanel;
 
-    public InstanceNamedConfigurable2(@NotNull final InstanceCredentials instanceCredentials, @Nullable Runnable updateTree, boolean isNew) {
+    public InstanceNamedConfigurable(@NotNull final InstanceCredentials instanceCredentials, @Nullable Runnable updateTree, boolean isNew) {
         super(false, updateTree);
         this.instanceCredentials = instanceCredentials;
         this.isNew = isNew;

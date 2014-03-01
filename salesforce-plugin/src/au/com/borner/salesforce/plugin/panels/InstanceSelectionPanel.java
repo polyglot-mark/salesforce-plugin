@@ -18,19 +18,12 @@ package au.com.borner.salesforce.plugin.panels;
 
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import com.intellij.openapi.project.Project;
-import com.intellij.openapi.ui.DialogWrapper;
-import com.intellij.openapi.ui.popup.JBPopup;
-import com.intellij.openapi.ui.popup.JBPopupFactory;
-import com.intellij.ui.popup.PopupComponent;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * A JPanel for selecting a Salesforce instance
@@ -69,8 +62,8 @@ public class InstanceSelectionPanel {
         return (String)instancesComboBox.getSelectedItem();
     }
 
-    public void resetSelectedInstance() {
-        instancesComboBox.setSelectedIndex(-1);
+    public void setSelectedInstance(String selectedInstance) {
+        instancesComboBox.setSelectedItem(selectedInstance);
     }
 
     public void refreshInstances() {

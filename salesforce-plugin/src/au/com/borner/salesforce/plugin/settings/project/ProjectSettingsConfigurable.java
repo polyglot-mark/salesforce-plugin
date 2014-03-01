@@ -21,6 +21,7 @@ public class ProjectSettingsConfigurable implements SearchableConfigurable {
     public ProjectSettingsConfigurable(Project project) {
         this.instanceSelectionPanel = new InstanceSelectionPanel(project);
         this.projectSettingsPersistentStateComponent = ProjectSettingsPersistentStateComponent.getInstance(project);
+        this.instanceSelectionPanel.setSelectedInstance(this.projectSettingsPersistentStateComponent.instanceName);
     }
 
     @NotNull
@@ -69,7 +70,7 @@ public class ProjectSettingsConfigurable implements SearchableConfigurable {
 
     @Override
     public void reset() {
-        instanceSelectionPanel.resetSelectedInstance();
+        instanceSelectionPanel.setSelectedInstance(projectSettingsPersistentStateComponent.instanceName);
     }
 
     @Override

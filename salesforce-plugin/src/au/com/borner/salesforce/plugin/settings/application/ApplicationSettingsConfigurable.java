@@ -31,7 +31,7 @@ public class ApplicationSettingsConfigurable implements SearchableConfigurable, 
     @Nls
     @Override
     public String getDisplayName() {
-        return "Salesforce Settings";
+        return "Salesforce";
     }
 
     @Nullable
@@ -72,7 +72,7 @@ public class ApplicationSettingsConfigurable implements SearchableConfigurable, 
     @NotNull
     @Override
     public String getId() {
-        return "salesforce.settings";
+        return "salesforce.application.settings";
     }
 
     @Nullable

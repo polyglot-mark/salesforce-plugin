@@ -52,19 +52,6 @@ public class SalesForceModuleBuilder extends JavaModuleBuilder {
         ProjectSettingsPersistentStateComponent projectSettings = ServiceManager.getService(modifiableRootModel.getProject(), ProjectSettingsPersistentStateComponent.class);
         projectSettings.instanceName = stateBean.getSelectedInstance();
 
-
-//        // Last, wait for the project to be initialized and then persist the instance to use for the project
-//        final Project project = modifiableRootModel.getProject();
-//        StartupManager.getInstance(project).runWhenProjectIsInitialized(new DumbAwareRunnable() {
-//            public void run() {
-//                ApplicationManager.getApplication().invokeLater(new Runnable() {
-//                    public void run() {
-//                        ProjectSettingsPersistentStateComponent projectSettings = ServiceManager.getService(project, ProjectSettingsPersistentStateComponent.class);
-//                        projectSettings.instanceName = stateBean.getSelectedInstance();
-//                    }
-//                });
-//            }
-//        });
     }
 
     @Override

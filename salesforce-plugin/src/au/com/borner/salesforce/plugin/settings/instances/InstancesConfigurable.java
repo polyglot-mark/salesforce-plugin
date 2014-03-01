@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonShortcuts;
 import com.intellij.openapi.actionSystem.CustomShortcutSet;
 import com.intellij.openapi.options.SearchableConfigurable;
+import com.intellij.openapi.project.Project;
 import com.intellij.openapi.project.ProjectManager;
 import com.intellij.openapi.ui.InputValidator;
 import com.intellij.openapi.ui.MasterDetailsComponent;
@@ -92,7 +93,7 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
                 InstanceCredentials oldInstance = (InstanceCredentials)getSelectedObject();
                 if (oldInstance == null) return;
                 if (!oldInstance.isRetrievedFromSafe()) {
-                    Messages.showErrorDialog("Please retrieve details from Safe.", "Error");
+                    Messages.showErrorDialog("Please retrieve details from Safe before copying.", "Error");
                     return;
                 }
                 String newInstanceName = askForInstanceName("Copy Salesforce Instance");
@@ -122,7 +123,7 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
         List<String> currentNames = new ArrayList<String>(myRoot.getChildCount());
         for (int i=0; i<myRoot.getChildCount(); i++) {
             MyNode node = (MyNode)myRoot.getChildAt(i);
-            InstanceNamedConfigurable instanceNamedConfigurable = (InstanceNamedConfigurable)node.getConfigurable();
+            InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
             currentNames.add(instanceNamedConfigurable.getEditableObject().getName());
         }
         // Now flip through all the persisted names, and if they don't exist on the settings page, delete them
@@ -172,19 +173,29 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
     // Helper methods
 
     private void addNewInstanceNode(InstanceCredentials instance) {
-        InstanceNamedConfigurable namedConfigurable = new InstanceNamedConfigurable(instance, TREE_UPDATER, true);
+        InstanceNamedConfigurable2 namedConfigurable = new InstanceNamedConfigurable2(instance, TREE_UPDATER, true);
         addNode(namedConfigurable);
     }
 
     private void addInstanceNode(InstanceCredentials instance) {
-        InstanceNamedConfigurable namedConfigurable = new InstanceNamedConfigurable(instance, TREE_UPDATER, false);
+        InstanceNamedConfigurable2 namedConfigurable = new InstanceNamedConfigurable2(instance, TREE_UPDATER, false);
         addNode(namedConfigurable);
     }
 
-    private void addNode(InstanceNamedConfigurable namedConfigurable) {
+    private void addNode(InstanceNamedConfigurable2 namedConfigurable) {
         MyNode node = new MyNode(namedConfigurable);
         addNode(node, myRoot);
         selectNodeInTree(node);
+    }
+
+    public List<String> getInstancesInTree() {
+        List<String> currentNames = new ArrayList<String>(myRoot.getChildCount());
+        for (int i=0; i<myRoot.getChildCount(); i++) {
+            MyNode node = (MyNode)myRoot.getChildAt(i);
+            InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
+            currentNames.add(instanceNamedConfigurable.getEditableObject().getName());
+        }
+        return currentNames;
     }
 
     @Nullable
@@ -194,12 +205,12 @@ public class InstancesConfigurable extends MasterDetailsComponent implements Sea
                 if (instanceName.length() == 0) {
                     return false;
                 }
-                if (instancesPersistentStateComponent.instanceNames.contains(instanceName)) {
+                if (DuplicateInstanceNameChecker.isDuplicate(instanceName) || getInstancesInTree().contains(instanceName)) {
                     return false;
                 }
                 for (int i=0; i<myRoot.getChildCount(); i++) {
                     MyNode node = (MyNode)myRoot.getChildAt(i);
-                    InstanceNamedConfigurable instanceNamedConfigurable = (InstanceNamedConfigurable)node.getConfigurable();
+                    InstanceNamedConfigurable2 instanceNamedConfigurable = (InstanceNamedConfigurable2)node.getConfigurable();
                     if (instanceName.equals(instanceNamedConfigurable.getEditableObject().getName())) {
                         return false;
                     }

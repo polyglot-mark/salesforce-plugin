@@ -10,10 +10,7 @@ import com.intellij.util.xmlb.XmlSerializerUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * The Persistent State Component which persists the Salesforce instance details
@@ -32,7 +29,7 @@ public class InstancesPersistentStateComponent implements PersistentStateCompone
     private Logger logger = Logger.getInstance(getClass());
 
     // Only the instance names are stored in clear text
-    public List<String> instanceNames = new ArrayList<String>();
+    public Set<String> instanceNames = new HashSet<String>();
 
     // The actual instance credentials are stored in memory only, and fetched on-demand from the password safe
     private Map<String,InstanceCredentials> instanceMap = new HashMap<String, InstanceCredentials>();
@@ -76,24 +73,27 @@ public class InstancesPersistentStateComponent implements PersistentStateCompone
     }
 
     public boolean addInstance(@NotNull InstanceCredentials instance) {
-        instanceNames.add(instance.getName());
         try {
             PasswordSafe.getInstance().storePassword(ProjectManager.getInstance().getDefaultProject(), InstancesPersistentStateComponent.class, SALES_FORCE_INSTANCE + instance.getName(), instance.toString());
-            return true;
         } catch (Exception e) {
             logger.error("Unable to save credentials", e);
             Messages.showErrorDialog("Your credentials were unable to be saved.  Please try again.", "Error");
             return false;
         }
+        instanceNames.add(instance.getName());
+        instanceMap.put(instance.getName(), instance);
+        return true;
     }
 
     public void removeInstance(@NotNull String instanceName) {
-        instanceNames.remove(instanceName);
         try {
             PasswordSafe.getInstance().removePassword(ProjectManager.getInstance().getDefaultProject(), InstancesPersistentStateComponent.class, SALES_FORCE_INSTANCE + instanceName);
         } catch (Exception e) {
             logger.warn("Unable to delete credentials", e);
+            return;
         }
+        instanceNames.remove(instanceName);
+        instanceMap.remove(instanceName);
     }
 
 }

@@ -1,5 +1,6 @@
 package au.com.borner.salesforce.plugin.settings.project;
 
+import au.com.borner.salesforce.plugin.panels.InstanceSelectionPanel;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.options.SearchableConfigurable;
 import com.intellij.openapi.project.Project;
@@ -18,14 +19,14 @@ public class ProjectSettingsConfigurable implements SearchableConfigurable {
     private final ProjectSettingsPersistentStateComponent projectSettingsPersistentStateComponent;
 
     public ProjectSettingsConfigurable(Project project) {
-        this.instanceSelectionPanel = new InstanceSelectionPanel();
+        this.instanceSelectionPanel = new InstanceSelectionPanel(project);
         this.projectSettingsPersistentStateComponent = ProjectSettingsPersistentStateComponent.getInstance(project);
     }
 
     @NotNull
     @Override
     public String getId() {
-        return "salesforce.project";
+        return "salesforce.project.settings";
     }
 
     @Nullable
@@ -37,7 +38,7 @@ public class ProjectSettingsConfigurable implements SearchableConfigurable {
     @Nls
     @Override
     public String getDisplayName() {
-        return "Salesforce Instance";
+        return "Salesforce";
     }
 
     @Nullable

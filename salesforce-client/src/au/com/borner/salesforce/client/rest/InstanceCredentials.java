@@ -27,8 +27,6 @@ public class InstanceCredentials {
     private String username;
     private String password;
     private String securityToken;
-    private String consumerKey;
-    private String consumerSecret;
     private String environment;
     private String otherUrl;
     private boolean retrievedFromSafe = false;
@@ -45,8 +43,6 @@ public class InstanceCredentials {
         this.username = other.username;
         this.password = other.password;
         this.securityToken = other.securityToken;
-        this.consumerKey = other.consumerKey;
-        this.consumerSecret = other.consumerSecret;
         this.environment = other.environment;
         this.otherUrl = other.otherUrl;
     }
@@ -83,22 +79,6 @@ public class InstanceCredentials {
         this.securityToken = securityToken;
     }
 
-    public String getConsumerKey() {
-        return consumerKey;
-    }
-
-    public void setConsumerKey(String consumerKey) {
-        this.consumerKey = consumerKey;
-    }
-
-    public String getConsumerSecret() {
-        return consumerSecret;
-    }
-
-    public void setConsumerSecret(String consumerSecret) {
-        this.consumerSecret = consumerSecret;
-    }
-
     public String getEnvironment() {
         return environment;
     }
@@ -117,8 +97,7 @@ public class InstanceCredentials {
 
     @Override
     public String toString() {
-        return String.format("%s|%s|%s|%s|%s|%s|%s|%s", name, username, password, securityToken,
-                consumerKey, consumerSecret, environment, otherUrl);
+        return String.format("%s|%s|%s|%s|%s|%s", name, username, password, securityToken, environment, otherUrl);
     }
 
     public static InstanceCredentials fromString(String string) {
@@ -128,11 +107,9 @@ public class InstanceCredentials {
         instance.username = parts[1];
         instance.password = parts[2];
         instance.securityToken = parts[3];
-        instance.consumerKey = parts[4];
-        instance.consumerSecret = parts[5];
-        instance.environment = parts[6];
-        if (parts.length == 8) {  // other URL is optional
-            instance.otherUrl = parts[7];
+        instance.environment = parts[4];
+        if (parts.length == 6) {  // other URL is optional
+            instance.otherUrl = parts[5];
         }
         return instance;
     }

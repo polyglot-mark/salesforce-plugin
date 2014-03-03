@@ -16,8 +16,8 @@
 
 package au.com.borner.salesforce.plugin.settings.instances;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.client.rest.InstanceUtils;
+import au.com.borner.salesforce.client.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceUtils;
 import au.com.borner.salesforce.plugin.panels.InstanceCredentialsPanel;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.ui.NamedConfigurable;

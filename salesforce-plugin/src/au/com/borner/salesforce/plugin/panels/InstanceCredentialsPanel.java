@@ -16,8 +16,8 @@
 
 package au.com.borner.salesforce.plugin.panels;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.client.rest.InstanceUtils;
+import au.com.borner.salesforce.client.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceUtils;
 import au.com.borner.salesforce.plugin.settings.instances.DuplicateInstanceNameChecker;
 import com.intellij.openapi.options.ConfigurationException;
 

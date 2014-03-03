@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package au.com.borner.salesforce.client.rest;
+package au.com.borner.salesforce.client;
 
 /**
  * @author Mark Borner (gzhomzb)

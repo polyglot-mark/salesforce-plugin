@@ -16,8 +16,9 @@
 
 package au.com.borner.salesforce.client.wsc;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.client.rest.InstanceUtils;
+import au.com.borner.salesforce.client.ClientException;
+import au.com.borner.salesforce.client.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceUtils;
 import com.intellij.openapi.diagnostic.Logger;
 import com.sforce.soap.apex.CompileAndTestRequest;
 import com.sforce.soap.apex.CompileAndTestResult;
@@ -125,7 +126,7 @@ public class SoapClient {
         try {
             return apexConnection.compileAndTest(compileAndTestRequest);
         } catch (ConnectionException e) {
-            throw new RuntimeException("Doh!", e);
+            throw new ClientException("Doh!", e);
         }
     }
 

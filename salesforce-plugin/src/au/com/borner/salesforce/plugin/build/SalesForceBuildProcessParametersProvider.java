@@ -16,8 +16,7 @@
 
 package au.com.borner.salesforce.plugin.build;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
-import au.com.borner.salesforce.plugin.service.SoapClientService;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import au.com.borner.salesforce.plugin.settings.project.ProjectSettingsPersistentStateComponent;
 import com.intellij.compiler.server.BuildProcessParametersProvider;

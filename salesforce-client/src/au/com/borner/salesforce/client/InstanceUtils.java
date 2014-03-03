@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package au.com.borner.salesforce.client.rest;
+package au.com.borner.salesforce.client;
 
 /**
  * A utility which translates the Environment setting to a login URL

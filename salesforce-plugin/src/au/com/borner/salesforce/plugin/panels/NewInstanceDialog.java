@@ -16,7 +16,6 @@
 
 package au.com.borner.salesforce.plugin.panels;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import com.intellij.openapi.options.ConfigurationException;
 import com.intellij.openapi.project.Project;

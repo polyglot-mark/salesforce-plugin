@@ -1,7 +1,6 @@
 package au.com.borner.salesforce.plugin.project;
 
-import au.com.borner.salesforce.client.rest.ConnectionManager;
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 
 import java.util.HashMap;
 import java.util.Map;

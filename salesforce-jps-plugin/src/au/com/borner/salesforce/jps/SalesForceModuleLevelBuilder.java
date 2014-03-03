@@ -17,7 +17,7 @@
 package au.com.borner.salesforce.jps;
 
 import au.com.borner.salesforce.client.rest.ConnectionManager;
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import au.com.borner.salesforce.client.rest.ToolingRestClient;
 import au.com.borner.salesforce.client.rest.domain.*;
 import au.com.borner.salesforce.client.wsc.SoapClient;

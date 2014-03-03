@@ -1,6 +1,6 @@
 package au.com.borner.salesforce.plugin.settings.instances;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonShortcuts;

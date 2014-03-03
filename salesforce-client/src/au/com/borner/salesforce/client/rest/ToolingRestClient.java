@@ -16,6 +16,7 @@
 
 package au.com.borner.salesforce.client.rest;
 
+import au.com.borner.salesforce.client.ClientException;
 import au.com.borner.salesforce.client.rest.domain.*;
 import org.jetbrains.annotations.NotNull;
 

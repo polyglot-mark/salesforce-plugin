@@ -16,7 +16,7 @@
 
 package au.com.borner.salesforce.plugin.service;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import au.com.borner.salesforce.client.wsc.SoapClient;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import au.com.borner.salesforce.plugin.settings.project.ProjectSettingsPersistentStateComponent;

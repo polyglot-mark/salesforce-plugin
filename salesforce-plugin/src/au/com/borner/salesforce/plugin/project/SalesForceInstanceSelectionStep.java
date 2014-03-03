@@ -16,7 +16,7 @@
 
 package au.com.borner.salesforce.plugin.project;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import au.com.borner.salesforce.plugin.panels.InstanceSelectionPanel;
 import au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent;
 import com.intellij.ide.util.projectWizard.ModuleWizardStep;

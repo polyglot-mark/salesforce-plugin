@@ -1,6 +1,6 @@
 package au.com.borner.salesforce.plugin.settings.instances;
 
-import au.com.borner.salesforce.client.rest.InstanceCredentials;
+import au.com.borner.salesforce.client.InstanceCredentials;
 import com.intellij.ide.passwordSafe.PasswordSafe;
 import com.intellij.openapi.components.*;
 import com.intellij.openapi.diagnostic.Logger;

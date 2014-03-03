@@ -22,8 +22,10 @@ import au.com.borner.salesforce.client.rest.ToolingRestClient;
 import au.com.borner.salesforce.client.rest.domain.*;
 import au.com.borner.salesforce.client.wsc.SoapClient;
 import au.com.borner.salesforce.util.FileUtilities;
-import com.intellij.openapi.diagnostic.Logger;
 import com.intellij.openapi.util.Pair;
+import com.sforce.soap.apex.*;
+import com.sforce.soap.apex.CodeCoverageResult;
+import org.apache.commons.io.FileUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.jps.ModuleChunk;
 import org.jetbrains.jps.builders.DirtyFilesHolder;
@@ -51,13 +53,109 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
     }
 
     @Override
-    public ExitCode build(final CompileContext context,
+    public ExitCode build(CompileContext context,
                           ModuleChunk chunk,
                           DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder,
                           OutputConsumer outputConsumer) throws ProjectBuildException, IOException {
 
         context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Starting Salesforce Compiler"));
         SalesForceProjectSettings projectSettings = SalesForceProjectSettings.getSettings(context.getProjectDescriptor().getProject());
+
+//        return compileUsingToolingAPI(context, dirtyFilesHolder);
+        return compileUsingApexAPI(context, dirtyFilesHolder);
+    }
+
+    @Override
+    public List<String> getCompilableFileExtensions() {
+        return Arrays.asList("cls", "page", "trigger", "component");
+    }
+
+    @NotNull
+    @Override
+    public String getPresentableName() {
+        return "Salesforce Compiler";
+    }
+
+    // Apex API compile -------------------------------------------
+
+    public ExitCode compileUsingApexAPI(final CompileContext context,
+                                           DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder) throws ProjectBuildException, IOException {
+
+        // Step 1: log into Salesforce
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Logging into Salesforce"));
+        InstanceCredentials instanceCredentials = new InstanceCredentials("Compile");
+        instanceCredentials.setUsername(System.getProperty("username"));
+        instanceCredentials.setPassword(System.getProperty("password"));
+        instanceCredentials.setSecurityToken(System.getProperty("securityToken"));
+        instanceCredentials.setEnvironment(System.getProperty("environment"));
+        SoapClient soapClient = new SoapClient();
+        soapClient.login(instanceCredentials, Boolean.getBoolean(System.getProperty("traceMessages")));
+
+
+        // Step 2: get all source
+        final Map<String, String> fileNameToUrlMap = new HashMap<String, String>();
+        final List<String> classes = new ArrayList<String>();
+        final List<String> triggers = new ArrayList<String>();
+        dirtyFilesHolder.processDirtyFiles(new FileProcessor<JavaSourceRootDescriptor, ModuleBuildTarget>() {
+            @Override
+            public boolean apply(ModuleBuildTarget target, File file, JavaSourceRootDescriptor root) throws IOException {
+                fileNameToUrlMap.put(FileUtilities.filenameWithoutExtension(file.getName()), file.getAbsolutePath());
+                if (file.getName().endsWith(".cls")) {
+                    classes.add(FileUtils.readFileToString(file));
+                } else if (file.getName().endsWith(".trigger")) {
+                    triggers.add(FileUtils.readFileToString(file));
+                }
+                return true;
+            }
+        });
+
+        // Step 3: compile
+        context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Compiling"));
+        CompileAndTestResult compileAndTestResult = soapClient.compile(classes, triggers);
+        soapClient.logoff();
+
+        // Step 4: check results
+        if (compileAndTestResult.getSuccess()) {
+            context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.INFO, "Compilation was successful"));
+            RunTestsResult runTestsResult = compileAndTestResult.getRunTestsResult();
+            for (CodeCoverageResult codeCoverageResult : runTestsResult.getCodeCoverage()) {
+                if (codeCoverageResult.getNumLocationsNotCovered() == 0) {
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.INFO, codeCoverageResult.getName() + " coverage: 100%"));
+                } else {
+                    double percentNotCovered = codeCoverageResult.getNumLocations() / codeCoverageResult.getNumLocationsNotCovered();
+                    double percentCovered = 1 - percentNotCovered;
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.INFO, codeCoverageResult.getName() + " coverage: " + String.format("%.2f", percentCovered)));
+                }
+            }
+            for (CodeCoverageWarning codeCoverageWarning : runTestsResult.getCodeCoverageWarnings()) {
+                String fileName = fileNameToUrlMap.get(codeCoverageWarning.getName());
+                context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.WARNING, codeCoverageWarning.getMessage(), fileName, -1, -1, -1, -1, -1));
+            }
+            return ExitCode.OK;
+        } else {
+            for (CompileClassResult compileClassResult : compileAndTestResult.getClasses()) {
+                String filePath = fileNameToUrlMap.get(compileClassResult.getName());
+                if (!compileClassResult.isSuccess()) {
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, compileClassResult.getProblem(), filePath, -1, -1, -1, compileClassResult.getLine(), compileClassResult.getColumn()));
+                }
+                for (String warning : compileClassResult.getWarnings()) {
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.WARNING, warning, filePath, -1, -1, -1, 1, 0));
+                }
+            }
+            for (CompileTriggerResult compileTriggerResult : compileAndTestResult.getTriggers()) {
+                String filePath = fileNameToUrlMap.get(compileTriggerResult.getName());
+                if (!compileTriggerResult.isSuccess()) {
+                    context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.ERROR, compileTriggerResult.getProblem(), filePath, -1, -1, -1, compileTriggerResult.getLine(), compileTriggerResult.getColumn()));
+                }
+            }
+            return ExitCode.ABORT;
+        }
+    }
+
+    // Tooling API compile ----------------------------------------
+
+    public ExitCode compileUsingToolingAPI(final CompileContext context,
+                                           DirtyFilesHolder<JavaSourceRootDescriptor, ModuleBuildTarget> dirtyFilesHolder) throws ProjectBuildException, IOException {
 
         // Step 1: login to Salesforce
         context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Logging into Salesforce"));
@@ -91,6 +189,8 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         // Step 4: invoke the Salesforce compiler
         context.processMessage(new CompilerMessage(EMPTY, BuildMessage.Kind.PROGRESS, "Requesting Async Compile"));
         ContainerAsyncRequest containerAsyncRequest = new ContainerAsyncRequest(metadataContainer);
+        containerAsyncRequest.setCheckOnly(false);
+        containerAsyncRequest.setRunTests(true);
         containerAsyncRequest = toolingRestClient.createSObject(containerAsyncRequest);
         int retryCount = 0;
         // TODO: make these parameters configurable because large amount of source files will take longer to compile!
@@ -155,20 +255,8 @@ public class SalesForceModuleLevelBuilder extends ModuleLevelBuilder {
         toolingRestClient.deleteSObject(metadataContainer);
         soapClient.logoff();
         return exitCode;
-    }
 
-    @Override
-    public List<String> getCompilableFileExtensions() {
-        return Arrays.asList("cls", "page", "trigger", "component");
     }
-
-    @NotNull
-    @Override
-    public String getPresentableName() {
-        return "Salesforce Compiler";
-    }
-
-    // ----------------------------------------
 
     public void uploadSource(@NotNull File file, @NotNull MetadataContainer metadataContainer, @NotNull CompileContext context, @NotNull ToolingRestClient toolingRestClient) {
         AbstractMetadataMember member;

@@ -10,6 +10,8 @@
     <orderEntry type="module" module-name="salesforce-client" />
     <orderEntry type="library" name="json-20140107" level="project" />
     <orderEntry type="library" name="commons-logging-1.1.3" level="project" />
+    <orderEntry type="library" name="commons-io-2.4" level="project" />
+    <orderEntry type="library" name="salesforce-wsc" level="project" />
   </component>
 </module>
 

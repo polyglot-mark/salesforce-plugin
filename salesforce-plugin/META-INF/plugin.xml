@@ -80,7 +80,6 @@
             serviceImplementation="au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent"
             serviceInterface="au.com.borner.salesforce.plugin.settings.instances.InstancesPersistentStateComponent"/>
 
-
         <projectConfigurable instance="au.com.borner.salesforce.plugin.settings.project.ProjectSettingsConfigurable"/>
 
         <projectService

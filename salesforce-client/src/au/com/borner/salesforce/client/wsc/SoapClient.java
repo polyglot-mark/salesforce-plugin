@@ -19,6 +19,9 @@ package au.com.borner.salesforce.client.wsc;
 import au.com.borner.salesforce.client.rest.InstanceCredentials;
 import au.com.borner.salesforce.client.rest.InstanceUtils;
 import com.intellij.openapi.diagnostic.Logger;
+import com.sforce.soap.apex.CompileAndTestRequest;
+import com.sforce.soap.apex.CompileAndTestResult;
+import com.sforce.soap.apex.RunTestsRequest;
 import com.sforce.soap.apex.SoapConnection;
 import com.sforce.soap.enterprise.Connector;
 import com.sforce.soap.enterprise.EnterpriseConnection;
@@ -30,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 /**
  * The client for the Salesforce Soap API
@@ -107,6 +111,21 @@ public class SoapClient {
         } catch (MalformedURLException e) {
             logger.error("Bad service URL returned from Salesforce", e);
             return null;
+        }
+    }
+
+    public CompileAndTestResult compile(List<String> classes, List<String> triggers) {
+        CompileAndTestRequest compileAndTestRequest = new CompileAndTestRequest();
+        compileAndTestRequest.setCheckOnly(false);
+        RunTestsRequest runTestsRequest = new RunTestsRequest();
+        runTestsRequest.setAllTests(true);
+        compileAndTestRequest.setRunTestsRequest(runTestsRequest);
+        compileAndTestRequest.setClasses(classes.toArray(new String[classes.size()]));
+        compileAndTestRequest.setTriggers(triggers.toArray(new String[triggers.size()]));
+        try {
+            return apexConnection.compileAndTest(compileAndTestRequest);
+        } catch (ConnectionException e) {
+            throw new RuntimeException("Doh!", e);
         }
     }
 

@@ -1,4 +1,6 @@
-# Develop Apex with Pleasure!
+# Note: this project is not actively being worked on or supported.  Please feel free to Fork and continue development.
+
+### Develop Apex with Pleasure!
 #### An IntelliJ IDEA Plugin for Salesforce Development
 
 This project is a work in progress.  The goal is to provide a Java-like experience for doing full-lifecycle Apex
@@ -69,4 +71,3 @@ The following instructions will get your development environment up and running 
 2.1 Select your clone location
 2.2 Select "Import from existing sources" and click through the Wizard
 
-Contact me if you'd like to contribute to this project.
